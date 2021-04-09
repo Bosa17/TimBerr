@@ -1,0 +1,87 @@
+{
+  materials: [
+    {
+      name: 'defaultMat',
+      parameters: [
+        {
+          baseColorFactor: [
+            1,
+            1,
+            1,
+            1,
+          ],
+        },
+        {
+          baseColor: 'f1090ce97e992e8b1225abd3f720734ad6021bd6',
+        },
+        {
+          diffuseColorFactor: null,
+        },
+        {
+          diffuseColor: null,
+        },
+        {
+          normal: null,
+        },
+        {
+          metallicFactor: 0,
+        },
+        {
+          roughnessFactor: 0.5,
+        },
+        {
+          specularFactor: null,
+        },
+        {
+          glossinessFactor: null,
+        },
+        {
+          specularGlossiness: null,
+        },
+        {
+          specularGlossinessCalculation: null,
+        },
+        {
+          metallicRoughness: null,
+        },
+        {
+          occlusion: null,
+        },
+        {
+          emissiveFactor: [
+            0,
+            0,
+            0,
+            1,
+          ],
+        },
+        {
+          emissive: null,
+        },
+        {
+          opacity: null,
+        },
+      ],
+      source: 'build/sceneform_sdk/default_materials/gltf_material.sfm',
+    },
+  ],
+  model: {
+    attributes: [
+      'Position',
+      'TexCoord',
+      'Orientation',
+    ],
+    collision: {},
+    file: 'sampledata/models/tbbilderreisemuehle.gltf',
+    name: 'tbbilderreisemuehle',
+    recenter: 'root',
+    scale: 0.0036389999999999999,
+  },
+  samplers: [
+    {
+      name: 'f1090ce97e992e8b1225abd3f720734ad6021bd6',
+      pipeline_name: '*0',
+    },
+  ],
+  version: '0.54:2',
+}
