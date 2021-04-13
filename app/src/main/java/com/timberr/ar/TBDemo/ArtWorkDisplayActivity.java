@@ -6,9 +6,9 @@ import android.app.ActivityManager;
 import android.content.Context;
 import android.content.Intent;
 import android.content.res.Configuration;
+import android.graphics.SurfaceTexture;
 import android.location.Location;
 import android.media.CamcorderProfile;
-import android.net.Uri;
 import android.os.Build;
 import android.os.Build.VERSION_CODES;
 import android.os.Bundle;
@@ -17,9 +17,11 @@ import android.support.constraint.ConstraintLayout;
 import android.support.constraint.ConstraintSet;
 import android.support.v7.app.AppCompatActivity;
 import android.util.ArraySet;
+import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.MotionEvent;
+import android.view.Surface;
 import android.view.View;
 import android.view.animation.Animation;
 import android.view.animation.RotateAnimation;
@@ -28,6 +30,9 @@ import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.Toast;
 
+import com.chillingvan.canvasgl.glcanvas.RawTexture;
+import com.chillingvan.canvasgl.glview.texture.GLSurfaceTextureProducerView;
+import com.chillingvan.canvasgl.util.Loggers;
 import com.google.android.filament.gltfio.Animator;
 import com.google.android.filament.gltfio.FilamentAsset;
 import com.google.ar.core.Anchor;
@@ -47,10 +52,11 @@ import com.google.ar.sceneform.rendering.ModelRenderable;
 import com.google.ar.sceneform.rendering.Renderable;
 import com.timberr.ar.TBDemo.Utils.BearingProvider;
 import com.timberr.ar.TBDemo.Utils.CustomArFragment;
-import com.timberr.ar.TBDemo.Utils.CustomSurfaceView;
 import com.timberr.ar.TBDemo.Utils.FileUtils;
 import com.timberr.ar.TBDemo.Utils.PermissionHelper;
 import com.timberr.ar.TBDemo.Utils.PhotoHelper;
+import com.timberr.ar.TBDemo.Utils.PreviewSurfaceTextureView;
+import com.timberr.ar.TBDemo.Utils.ScreenUtil;
 import com.timberr.ar.TBDemo.Utils.VideoRecorder;
 
 import java.lang.ref.WeakReference;
@@ -70,6 +76,10 @@ public class ArtWorkDisplayActivity extends AppCompatActivity implements Bearing
   private boolean isRenderablePlaced;
   private boolean isPhotoVdoMode;
   private VideoRecorder videoRecorder;
+  private PreviewSurfaceTextureView previewSurfaceTextureView;
+  private Surface mediaSurface;
+  private int height;
+  private int width;
 
   private ImageView nav_compass;
   private View frame;
@@ -78,6 +88,7 @@ public class ArtWorkDisplayActivity extends AppCompatActivity implements Bearing
   private Button photo_btn;
   private CustomArFragment arFragment;
   private Renderable renderable;
+
 
 
     private static class AnimationInstance {
@@ -104,7 +115,9 @@ public class ArtWorkDisplayActivity extends AppCompatActivity implements Bearing
       if (!checkIsSupportedDeviceOrFinish(this)) {
         return;
       }
-
+      DisplayMetrics displayMetrics = new DisplayMetrics();
+      height = ScreenUtil.getScreenHeight(this);
+      width = ScreenUtil.getScreenWidth(this);
       setContentView(R.layout.activity_ux);
       arFragment = (CustomArFragment) getSupportFragmentManager().findFragmentById(R.id.ux_fragment);
       nav_compass=findViewById(R.id.nav_compass_art);
@@ -150,6 +163,7 @@ public class ArtWorkDisplayActivity extends AppCompatActivity implements Bearing
 
       isRenderablePlaced=false;
       isPhotoVdoMode=false;
+      initTextureView();
       snap.setOnClickListener(new View.OnClickListener() {
           @Override
           public void onClick(View view) {
@@ -238,6 +252,8 @@ public class ArtWorkDisplayActivity extends AppCompatActivity implements Bearing
         } catch (CameraNotAvailableException e) {
             e.printStackTrace();
         }
+        if (previewSurfaceTextureView!=null)
+            previewSurfaceTextureView.onResume();
     }
 
     @Override
@@ -249,6 +265,9 @@ public class ArtWorkDisplayActivity extends AppCompatActivity implements Bearing
         mBearingProvider.stop();
         arFragment.getArSceneView().pause();
         arFragment.onPause();
+        if (previewSurfaceTextureView!=null)
+            previewSurfaceTextureView.onPause();
+        arFragment.getArSceneView().stopMirroringToSurface(mediaSurface);
     }
 
     private void startPhotoMode(){
@@ -260,10 +279,32 @@ public class ArtWorkDisplayActivity extends AppCompatActivity implements Bearing
         snap.setVisibility(View.GONE);
         photo_btn.setVisibility(View.VISIBLE);
 //        frame.setVisibility(View.VISIBLE);
-
     }
 
+    private void initTextureView() {
+        if(width<height)
+            height = width;
+        else
+            width = height;
+        previewSurfaceTextureView = new PreviewSurfaceTextureView(this,width,height);
 
+        previewSurfaceTextureView.setOnSurfaceTextureSet(new GLSurfaceTextureProducerView.OnSurfaceTextureSet() {
+            @Override
+            public void onSet(SurfaceTexture surfaceTexture, RawTexture surfaceTextureRelatedTexture) {
+                surfaceTexture.setOnFrameAvailableListener(new SurfaceTexture.OnFrameAvailableListener() {
+                    @Override
+                    public void onFrameAvailable(SurfaceTexture surfaceTexture) {
+                        Loggers.i("MediaPlayerActivity", "onFrameAvailable: ");
+                        previewSurfaceTextureView.requestRenderAndWait();
+                    }
+                });
+
+                mediaSurface = new Surface(surfaceTexture);
+                arFragment.getArSceneView().startMirroringToSurface(mediaSurface,0,0,width,height);
+            }
+        });
+
+    }
     //change to photo-mode view
     private void setCameraPreview_Frame()
     {
@@ -277,17 +318,19 @@ public class ArtWorkDisplayActivity extends AppCompatActivity implements Bearing
             width = height;
         ConstraintLayout parentLayout = (ConstraintLayout)findViewById(R.id.parent_layout);
         ConstraintSet set = new ConstraintSet();
-        CustomSurfaceView childView= new CustomSurfaceView(this, arFragment.getArSceneView(),width,height);
-        childView.setId(View.generateViewId());
-        parentLayout.addView(childView, 0);
 
+        previewSurfaceTextureView.setId(View.generateViewId());
+        parentLayout.addView(previewSurfaceTextureView, 0);
         set.clone(parentLayout);
         // connect start and end point of views, in this case top of child to top of parent.
-        set.connect(childView.getId(), ConstraintSet.TOP, parentLayout.getId(), ConstraintSet.TOP, 0);
-        set.connect(childView.getId(), ConstraintSet.BOTTOM, parentLayout.getId(), ConstraintSet.BOTTOM, 0);
-        // ... similarly add other constraints
+        set.connect(previewSurfaceTextureView.getId(), ConstraintSet.TOP, parentLayout.getId(), ConstraintSet.TOP, 0);
+        set.connect(previewSurfaceTextureView.getId(), ConstraintSet.BOTTOM, parentLayout.getId(), ConstraintSet.BOTTOM, 0);
+        set.constrainWidth(previewSurfaceTextureView.getId(),width);
+        set.constrainHeight(previewSurfaceTextureView.getId(),height);
+//         ... similarly add other constraints
         set.applyTo(parentLayout);
         RelativeLayout.LayoutParams layoutParams = new RelativeLayout.LayoutParams(width, height);
+        layoutParams.addRule(RelativeLayout.CENTER_IN_PARENT, RelativeLayout.TRUE);
         arFragment.getView().setLayoutParams(layoutParams);
         arFragment.getView().setVisibility(View.INVISIBLE);
     }
@@ -332,7 +375,6 @@ public class ArtWorkDisplayActivity extends AppCompatActivity implements Bearing
                     //create Anchor
                     Anchor anchor=plane.createAnchor(hitResult.getHitPose());
                     placeRenderable(anchor);
-                    arFragment.getArSceneView().getPlaneRenderer().setEnabled(false);
                 }
 
             }
@@ -424,7 +466,6 @@ public class ArtWorkDisplayActivity extends AppCompatActivity implements Bearing
 
     @Override
     public void onPhotoSaved( String file_path) {
-
         Intent i = new Intent(this, PicturePreviewActivity.class);
         i.putExtra("path", file_path);
         startActivity(i);
