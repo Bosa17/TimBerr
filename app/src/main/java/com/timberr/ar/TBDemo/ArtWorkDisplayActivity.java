@@ -9,6 +9,7 @@ import android.content.res.Configuration;
 import android.graphics.SurfaceTexture;
 import android.location.Location;
 import android.media.CamcorderProfile;
+import android.opengl.GLES11Ext;
 import android.os.Build;
 import android.os.Build.VERSION_CODES;
 import android.os.Bundle;
@@ -17,7 +18,6 @@ import android.support.constraint.ConstraintLayout;
 import android.support.constraint.ConstraintSet;
 import android.support.v7.app.AppCompatActivity;
 import android.util.ArraySet;
-import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.MotionEvent;
@@ -32,7 +32,6 @@ import android.widget.Toast;
 
 import com.chillingvan.canvasgl.glcanvas.RawTexture;
 import com.chillingvan.canvasgl.glview.texture.GLSurfaceTextureProducerView;
-import com.chillingvan.canvasgl.util.Loggers;
 import com.google.android.filament.gltfio.Animator;
 import com.google.android.filament.gltfio.FilamentAsset;
 import com.google.ar.core.Anchor;
@@ -51,7 +50,7 @@ import com.google.ar.sceneform.math.Vector3;
 import com.google.ar.sceneform.rendering.ModelRenderable;
 import com.google.ar.sceneform.rendering.Renderable;
 import com.timberr.ar.TBDemo.Utils.BearingProvider;
-import com.timberr.ar.TBDemo.Utils.CustomArFragment;
+import com.timberr.ar.TBDemo.Utils.ArtworkDisplayARFragment;
 import com.timberr.ar.TBDemo.Utils.FileUtils;
 import com.timberr.ar.TBDemo.Utils.PermissionHelper;
 import com.timberr.ar.TBDemo.Utils.PhotoHelper;
@@ -86,7 +85,7 @@ public class ArtWorkDisplayActivity extends AppCompatActivity implements Bearing
   private Button snap;
   private Button back;
   private Button photo_btn;
-  private CustomArFragment arFragment;
+  private ArtworkDisplayARFragment arFragment;
   private Renderable renderable;
 
 
@@ -115,11 +114,10 @@ public class ArtWorkDisplayActivity extends AppCompatActivity implements Bearing
       if (!checkIsSupportedDeviceOrFinish(this)) {
         return;
       }
-      DisplayMetrics displayMetrics = new DisplayMetrics();
       height = ScreenUtil.getScreenHeight(this);
       width = ScreenUtil.getScreenWidth(this);
       setContentView(R.layout.activity_ux);
-      arFragment = (CustomArFragment) getSupportFragmentManager().findFragmentById(R.id.ux_fragment);
+      arFragment = (ArtworkDisplayARFragment) getSupportFragmentManager().findFragmentById(R.id.ux_fragment);
       nav_compass=findViewById(R.id.nav_compass_art);
       frame=findViewById(R.id.frame);
       snap=findViewById(R.id.snap);
@@ -163,7 +161,6 @@ public class ArtWorkDisplayActivity extends AppCompatActivity implements Bearing
 
       isRenderablePlaced=false;
       isPhotoVdoMode=false;
-      initTextureView();
       snap.setOnClickListener(new View.OnClickListener() {
           @Override
           public void onClick(View view) {
@@ -294,11 +291,10 @@ public class ArtWorkDisplayActivity extends AppCompatActivity implements Bearing
                 surfaceTexture.setOnFrameAvailableListener(new SurfaceTexture.OnFrameAvailableListener() {
                     @Override
                     public void onFrameAvailable(SurfaceTexture surfaceTexture) {
-                        Loggers.i("MediaPlayerActivity", "onFrameAvailable: ");
                         previewSurfaceTextureView.requestRenderAndWait();
                     }
                 });
-
+                previewSurfaceTextureView.setProducedTextureTarget(GLES11Ext.GL_TEXTURE_EXTERNAL_OES);
                 mediaSurface = new Surface(surfaceTexture);
                 arFragment.getArSceneView().startMirroringToSurface(mediaSurface,0,0,width,height);
             }
@@ -308,6 +304,7 @@ public class ArtWorkDisplayActivity extends AppCompatActivity implements Bearing
     //change to photo-mode view
     private void setCameraPreview_Frame()
     {
+        initTextureView();
         RelativeLayout rel_Camera_Preview = (RelativeLayout)findViewById(R.id.rel_Camera_Preview);
         int width = rel_Camera_Preview.getWidth();
         int height = rel_Camera_Preview.getHeight();
@@ -381,7 +378,7 @@ public class ArtWorkDisplayActivity extends AppCompatActivity implements Bearing
         }
     }
     private Vector3 screenCentre(){
-      return new Vector3(frame.getWidth()/2.0f,frame.getHeight()/2.0f,0f);
+      return new Vector3(width/2.0f,height/2.0f,0f);
     }
     private void placeRenderable(Anchor anchor){
       if (renderable == null) {

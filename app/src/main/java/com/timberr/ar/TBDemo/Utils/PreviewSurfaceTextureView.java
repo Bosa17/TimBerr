@@ -17,6 +17,7 @@ import com.chillingvan.canvasgl.glview.texture.GLSurfaceTextureProducerView;
 import com.chillingvan.canvasgl.glview.texture.GLTexture;
 import com.chillingvan.canvasgl.glview.texture.gles.GLThread;
 import com.chillingvan.canvasgl.textureFilter.BasicTextureFilter;
+import com.chillingvan.canvasgl.textureFilter.RGBFilter;
 import com.chillingvan.canvasgl.textureFilter.TextureFilter;
 import com.timberr.ar.TBDemo.R;
 
@@ -29,9 +30,11 @@ public class PreviewSurfaceTextureView extends GLSurfaceTextureProducerView {
     private int height;
     private Bitmap bmp2;
     private TextureFilter textureFilter = new BasicTextureFilter();
+
     public PreviewSurfaceTextureView(Context context) {
         super(context);
     }
+
     public PreviewSurfaceTextureView(Context context,int width, int height) {
         super(context);
         this.width=width;
@@ -53,34 +56,18 @@ public class PreviewSurfaceTextureView extends GLSurfaceTextureProducerView {
     protected void init() {
         super.init();
     }
-    @Override
-    protected int getRenderMode() {
-        return GLThread.RENDERMODE_WHEN_DIRTY;
-    }
 
-    @Override
-    public void onSurfaceCreated() {
-//        setProducedTextureTarget(GLES11Ext.GL_TEXTURE_EXTERNAL_OES);
-//        setProducedTextureTarget(GLES20.GL_TEXTURE_2D);
-        super.onSurfaceCreated();
-    }
-
-    public void setTextureFilter(TextureFilter textureFilter) {
-        this.textureFilter = textureFilter;
-    }
 
     @Override
     protected void onGLDraw(ICanvasGL canvas, GLTexture producedGLTexture, @Nullable GLTexture outsideGLTexture) {
-        super.onGLDraw(canvas, producedGLTexture, outsideGLTexture);
+//        super.onGLDraw(canvas, producedGLTexture, outsideGLTexture);
         Log.d("lol", "onGLDraw: ");
         RawTexture producedRawTexture = producedGLTexture.getRawTexture();
         SurfaceTexture producedSurfaceTexture = producedGLTexture.getSurfaceTexture();
         producedRawTexture.setIsFlippedVertically(true);
-        canvas.drawSurfaceTexture(producedRawTexture, producedSurfaceTexture, 0, 0, width, height,textureFilter);
+        canvas.drawSurfaceTexture(producedRawTexture, producedSurfaceTexture, 0, 0, width, height);
         canvas.drawBitmap(bmp2, 0,0);
     }
-
-
 
     private static Bitmap getResizedBitmap(Bitmap bm, int newWidth, int newHeight) {
         int width = bm.getWidth();

@@ -32,7 +32,7 @@
 
     <fragment
         android:id="@+id/ux_fragment"
-        android:name="com.timberr.ar.TBDemo.Utils.CustomArFragment"
+        android:name="com.timberr.ar.TBDemo.Utils.ArtworkDisplayARFragment"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         />
@@ -50,11 +50,11 @@
 
   <Button
       android:id="@+id/back"
-      android:layout_width="wrap_content"
-      android:layout_height="wrap_content"
+      android:layout_width="200dp"
+      android:layout_height="95dp"
       android:layout_marginStart="32dp"
       android:layout_marginTop="32dp"
-      android:text="Back"
+      android:background="@drawable/back"
       app:layout_constraintStart_toStartOf="parent"
       app:layout_constraintTop_toTopOf="parent" />
 
@@ -70,11 +70,11 @@
 
   <Button
       android:id="@+id/snap"
-      android:layout_width="wrap_content"
-      android:layout_height="wrap_content"
+      android:layout_width="95dp"
+      android:layout_height="95dp"
       android:layout_marginTop="32dp"
       android:layout_marginEnd="32dp"
-      android:text="Photo Mode"
+      android:background="@drawable/creativbutton"
       app:layout_constraintEnd_toEndOf="parent"
       app:layout_constraintTop_toTopOf="parent" />
 

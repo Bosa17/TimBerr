@@ -4,6 +4,56 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="#FDFDFD"
     tools:context=".RouteSelectActivity">
+
+    <Button
+        android:id="@+id/back_btn"
+        android:layout_width="74dp"
+        android:layout_height="35dp"
+        android:background="@drawable/back"
+        app:layout_constraintBottom_toTopOf="@+id/linearLayout"
+        app:layout_constraintStart_toStartOf="@+id/linearLayout"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <LinearLayout
+        android:id="@+id/linearLayout"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <Button
+            android:id="@+id/pocket_guide"
+            android:layout_width="232dp"
+            android:layout_height="80dp"
+            android:layout_margin="20dp"
+            android:background="@drawable/pocketguide_ar"
+            android:onClick="onPocketGuideClicked" />
+
+        <Button
+            android:id="@+id/route_1"
+            android:layout_width="232dp"
+            android:layout_height="80dp"
+            android:layout_margin="20dp"
+            android:background="@drawable/route1" />
+
+        <Button
+            android:id="@+id/route_2"
+            android:layout_width="232dp"
+            android:layout_height="80dp"
+            android:layout_margin="20dp"
+            android:background="@drawable/route2" />
+
+        <Button
+            android:id="@+id/route_3"
+            android:layout_width="232dp"
+            android:layout_height="80dp"
+            android:layout_margin="20dp"
+            android:background="@drawable/route3" />
+    </LinearLayout>
 
 </android.support.constraint.ConstraintLayout>
