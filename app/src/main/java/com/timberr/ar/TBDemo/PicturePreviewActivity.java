@@ -39,6 +39,7 @@ public class PicturePreviewActivity extends AppCompatActivity {
             public void run() {
                 /* Create an Intent that will start the Menu-Activity. */
                 PicturePreviewActivity.super.onBackPressed();
+                overridePendingTransition(R.anim.fadein, R.anim.hold);
             }
         }, 2000);
     }

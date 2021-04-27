@@ -19,7 +19,7 @@
     android:id="@+id/parent_layout"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#FFFFFF"
+    android:background="@drawable/blur_bg"
     tools:context=".ArtWorkDisplayActivity">
 
   <RelativeLayout
@@ -34,14 +34,14 @@
         android:id="@+id/ux_fragment"
         android:name="com.timberr.ar.TBDemo.Utils.ArtworkDisplayARFragment"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        />
+        android:layout_height="match_parent" />
+
     <ImageView
         android:id="@+id/frame"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:visibility="invisible"
         android:src="@drawable/photo_frame"
+        android:visibility="invisible"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent" />
 

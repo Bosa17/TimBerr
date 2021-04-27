@@ -75,8 +75,6 @@ public class ArtWorkDisplayActivity extends AppCompatActivity implements Bearing
   private boolean isRenderablePlaced;
   private boolean isPhotoVdoMode;
   private VideoRecorder videoRecorder;
-  private PreviewSurfaceTextureView previewSurfaceTextureView;
-  private Surface mediaSurface;
   private int height;
   private int width;
 
@@ -249,8 +247,6 @@ public class ArtWorkDisplayActivity extends AppCompatActivity implements Bearing
         } catch (CameraNotAvailableException e) {
             e.printStackTrace();
         }
-        if (previewSurfaceTextureView!=null)
-            previewSurfaceTextureView.onResume();
     }
 
     @Override
@@ -262,9 +258,6 @@ public class ArtWorkDisplayActivity extends AppCompatActivity implements Bearing
         mBearingProvider.stop();
         arFragment.getArSceneView().pause();
         arFragment.onPause();
-        if (previewSurfaceTextureView!=null)
-            previewSurfaceTextureView.onPause();
-        arFragment.getArSceneView().stopMirroringToSurface(mediaSurface);
     }
 
     private void startPhotoMode(){
@@ -275,36 +268,13 @@ public class ArtWorkDisplayActivity extends AppCompatActivity implements Bearing
         nav_compass.setVisibility(View.GONE);
         snap.setVisibility(View.GONE);
         photo_btn.setVisibility(View.VISIBLE);
-//        frame.setVisibility(View.VISIBLE);
+        frame.setVisibility(View.VISIBLE);
     }
 
-    private void initTextureView() {
-        if(width<height)
-            height = width;
-        else
-            width = height;
-        previewSurfaceTextureView = new PreviewSurfaceTextureView(this,width,height);
 
-        previewSurfaceTextureView.setOnSurfaceTextureSet(new GLSurfaceTextureProducerView.OnSurfaceTextureSet() {
-            @Override
-            public void onSet(SurfaceTexture surfaceTexture, RawTexture surfaceTextureRelatedTexture) {
-                surfaceTexture.setOnFrameAvailableListener(new SurfaceTexture.OnFrameAvailableListener() {
-                    @Override
-                    public void onFrameAvailable(SurfaceTexture surfaceTexture) {
-                        previewSurfaceTextureView.requestRenderAndWait();
-                    }
-                });
-                previewSurfaceTextureView.setProducedTextureTarget(GLES11Ext.GL_TEXTURE_EXTERNAL_OES);
-                mediaSurface = new Surface(surfaceTexture);
-                arFragment.getArSceneView().startMirroringToSurface(mediaSurface,0,0,width,height);
-            }
-        });
-
-    }
     //change to photo-mode view
     private void setCameraPreview_Frame()
     {
-        initTextureView();
         RelativeLayout rel_Camera_Preview = (RelativeLayout)findViewById(R.id.rel_Camera_Preview);
         int width = rel_Camera_Preview.getWidth();
         int height = rel_Camera_Preview.getHeight();
@@ -313,23 +283,9 @@ public class ArtWorkDisplayActivity extends AppCompatActivity implements Bearing
             height = width;
         else
             width = height;
-        ConstraintLayout parentLayout = (ConstraintLayout)findViewById(R.id.parent_layout);
-        ConstraintSet set = new ConstraintSet();
-
-        previewSurfaceTextureView.setId(View.generateViewId());
-        parentLayout.addView(previewSurfaceTextureView, 0);
-        set.clone(parentLayout);
-        // connect start and end point of views, in this case top of child to top of parent.
-        set.connect(previewSurfaceTextureView.getId(), ConstraintSet.TOP, parentLayout.getId(), ConstraintSet.TOP, 0);
-        set.connect(previewSurfaceTextureView.getId(), ConstraintSet.BOTTOM, parentLayout.getId(), ConstraintSet.BOTTOM, 0);
-        set.constrainWidth(previewSurfaceTextureView.getId(),width);
-        set.constrainHeight(previewSurfaceTextureView.getId(),height);
-//         ... similarly add other constraints
-        set.applyTo(parentLayout);
         RelativeLayout.LayoutParams layoutParams = new RelativeLayout.LayoutParams(width, height);
         layoutParams.addRule(RelativeLayout.CENTER_IN_PARENT, RelativeLayout.TRUE);
         arFragment.getView().setLayoutParams(layoutParams);
-        arFragment.getView().setVisibility(View.INVISIBLE);
     }
 
 
