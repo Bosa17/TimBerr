@@ -7,17 +7,6 @@
     tools:context=".LandingActivity">
 
     <Button
-        android:id="@+id/start_button"
-        android:layout_width="285dp"
-        android:layout_height="347dp"
-        android:background="@drawable/start"
-        android:visibility="visible"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
-
-    <Button
         android:id="@+id/button2"
         android:layout_width="95dp"
         android:layout_height="95dp"
@@ -38,6 +27,32 @@
         android:id="@+id/imageView2"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:background="@drawable/start_bg" />
+        android:background="@drawable/start_bg"
+        tools:layout_editor_absoluteX="0dp"
+        tools:layout_editor_absoluteY="0dp" />
+
+    <ImageView
+        android:id="@+id/rabbit"
+        android:layout_width="224dp"
+        android:layout_height="322dp"
+        android:background="@drawable/rabbit"
+        android:elevation="7dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toStartOf="@+id/button2"
+        app:layout_constraintHorizontal_bias="0.2"
+        app:layout_constraintStart_toStartOf="@+id/start_button"
+        app:layout_constraintTop_toTopOf="@+id/start_button"
+        app:layout_constraintVertical_bias="0.85" />
+
+    <Button
+        android:id="@+id/start_button"
+        android:layout_width="285dp"
+        android:layout_height="347dp"
+        android:background="@drawable/start"
+        android:visibility="visible"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
 
 </android.support.constraint.ConstraintLayout>

@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<animation-list xmlns:android="http://schemas.android.com/apk/res/android"
+    android:oneshot="false">
+    <item android:drawable="@drawable/rabbit_idle_1" android:duration="100" />
+    <item android:drawable="@drawable/rabbit_idle_2" android:duration="100" />
+    <item android:drawable="@drawable/rabbit_idle_3" android:duration="100" />
+    <item android:drawable="@drawable/rabbit_idle_4" android:duration="100" />
+    <item android:drawable="@drawable/rabbit_idle_5" android:duration="100" />
+    <item android:drawable="@drawable/rabbit_idle_6" android:duration="100" />
+    <item android:drawable="@drawable/rabbit_idle_7" android:duration="100" />
+    <item android:drawable="@drawable/rabbit_idle_8" android:duration="100" />
+    <item android:drawable="@drawable/rabbit_idle_9" android:duration="100" />
+    <item android:drawable="@drawable/rabbit_idle_10" android:duration="100" />
+    <item android:drawable="@drawable/rabbit_idle_11" android:duration="100" />
+    <item android:drawable="@drawable/rabbit_idle_12" android:duration="100" />
+    <item android:drawable="@drawable/rabbit_idle_13" android:duration="100" />
+    <item android:drawable="@drawable/rabbit_idle_14" android:duration="100" />
+    <item android:drawable="@drawable/rabbit_idle_15" android:duration="100" />
+    <item android:drawable="@drawable/rabbit_idle_16" android:duration="100" />
+    <item android:drawable="@drawable/rabbit_idle_17" android:duration="100" />
+    <item android:drawable="@drawable/rabbit_idle_18" android:duration="100" />
+    <item android:drawable="@drawable/rabbit_idle_19" android:duration="100" />
+    <item android:drawable="@drawable/rabbit_idle_20" android:duration="100" />
+    <item android:drawable="@drawable/rabbit_idle_21" android:duration="100" />
+    <item android:drawable="@drawable/rabbit_idle_22" android:duration="100" />
+    <item android:drawable="@drawable/rabbit_idle_23" android:duration="100" />
+    <item android:drawable="@drawable/rabbit_idle_24" android:duration="100" />
+    <item android:drawable="@drawable/rabbit_idle_25" android:duration="100" />
+    <item android:drawable="@drawable/rabbit_idle_26" android:duration="100" />
+    <item android:drawable="@drawable/rabbit_idle_27" android:duration="100" />
+    <item android:drawable="@drawable/rabbit_idle_28" android:duration="100" />
+    <item android:drawable="@drawable/rabbit_idle_29" android:duration="100" />
+</animation-list>

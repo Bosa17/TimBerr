@@ -37,6 +37,11 @@ public class GuideCameraActivity extends AppCompatActivity {
     }
 
     @Override
+    public void onBackPressed() {
+        super.onBackPressed();
+        overridePendingTransition(R.anim.fadein, R.anim.fadeout);
+    }
+    @Override
     protected void onResume() {
         super.onResume();
         if (augmentedImageMap.isEmpty()) {
