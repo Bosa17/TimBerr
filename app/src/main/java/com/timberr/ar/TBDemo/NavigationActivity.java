@@ -26,9 +26,13 @@ import com.google.ar.sceneform.FrameTime;
 import com.google.ar.sceneform.Node;
 import com.google.ar.sceneform.Scene;
 import com.google.ar.sceneform.SceneView;
+import com.google.ar.sceneform.math.Quaternion;
 import com.google.ar.sceneform.math.Vector3;
 import com.google.ar.sceneform.rendering.ModelRenderable;
 import com.google.ar.sceneform.rendering.Renderable;
+import com.google.ar.sceneform.ux.FootprintSelectionVisualizer;
+import com.google.ar.sceneform.ux.TransformableNode;
+import com.google.ar.sceneform.ux.TransformationSystem;
 import com.timberr.ar.TBDemo.Utils.BearingProvider;
 import com.timberr.ar.TBDemo.Utils.PermissionHelper;
 
@@ -88,7 +92,6 @@ public class NavigationActivity extends AppCompatActivity implements BearingProv
         calib=(ImageView) findViewById(R.id.calib);
         calib_complete=findViewById(R.id.calib_btn);
         sceneView=findViewById(R.id.nav_anim_view);
-//        new Scene(sceneView);
         back=findViewById(R.id.back);
         back.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -128,8 +131,8 @@ public class NavigationActivity extends AppCompatActivity implements BearingProv
             }
         }
         target=new Location("B");
-        target.setLatitude(trackpoints.get(0).getLatitude());//50.768094  50.785750
-        target.setLongitude(trackpoints.get(0).getLongitude());//6.090876  6.053170
+        target.setLatitude(50.768094);//50.768094  50.785750
+        target.setLongitude(6.090876 );//6.090876  6.053170
         mBearingProvider = new BearingProvider(this);
         mBearingProvider.setChangeEventListener(this);
         calib_complete.setOnClickListener(new View.OnClickListener() {
@@ -144,8 +147,8 @@ public class NavigationActivity extends AppCompatActivity implements BearingProv
         ModelRenderable.builder()
                 .setSource(
                         this,
-                        R.raw.nav_anim)
-                .setIsFilamentGltf(false)
+                        R.raw.animationroute)
+                .setIsFilamentGltf(true)
                 .build()
                 .thenAccept(
                         modelRenderable -> {
@@ -252,15 +255,15 @@ public class NavigationActivity extends AppCompatActivity implements BearingProv
     @Override
     public void onLocationReached() {
         Toast.makeText(this, "You have reached!", Toast.LENGTH_SHORT).show();
-        new Handler().postDelayed(new Runnable(){
-            @Override
-            public void run() {
-                /* Create an Intent that will start the Menu-Activity. */
-                Intent intent = new Intent(NavigationActivity.this,ArtWorkDisplayActivity.class);
-                NavigationActivity.this.startActivity(intent);
-                overridePendingTransition(R.anim.fadein, R.anim.hold);
-            }
-        }, 1000);
+//        new Handler().postDelayed(new Runnable(){
+//            @Override
+//            public void run() {
+//                /* Create an Intent that will start the Menu-Activity. */
+//                Intent intent = new Intent(NavigationActivity.this,ArtWorkDisplayActivity.class);
+//                NavigationActivity.this.startActivity(intent);
+//                overridePendingTransition(R.anim.fadein, R.anim.hold);
+//            }
+//        }, 1000);
     }
 
     @Override
@@ -276,10 +279,11 @@ public class NavigationActivity extends AppCompatActivity implements BearingProv
             return;
         }
         Log.d(TAG, "placeRenderable: "+renderable);
-
         Node node= new Node();
+        node.setLocalScale(new Vector3(7.0f,7.0f,7.0f));
+        node.setLocalPosition(new Vector3(-0.06f,0.07f,-0.3f));
+        node.setLocalRotation(new Quaternion(new Vector3(1,0,0),90));
         node.setRenderable(renderable);
-        node.setLocalPosition(new Vector3(0f,0,-3f));
         sceneView.getScene().addChild(node);
         FilamentAsset filamentAsset = node.getRenderableInstance().getFilamentAsset();
         if (filamentAsset.getAnimator().getAnimationCount() > 0) {

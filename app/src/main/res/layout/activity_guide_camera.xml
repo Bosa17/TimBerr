@@ -7,7 +7,7 @@
 
 
     <fragment android:name="com.timberr.ar.TBDemo.Utils.AugmentedImageFragment"
-        android:id="@+id/ux_fragment"
+        android:id="@+id/augmented_image_fragment"
         android:layout_width="match_parent"
         android:layout_height="match_parent" />
 
