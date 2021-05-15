@@ -3,12 +3,18 @@ package com.timberr.ar.TBDemo.Utils;
 import android.content.Context;
 import android.net.Uri;
 import android.util.Log;
+import android.view.Gravity;
+import android.widget.Toast;
 
+import com.google.android.filament.gltfio.FilamentAsset;
 import com.google.ar.core.AugmentedImage;
 import com.google.ar.sceneform.AnchorNode;
 import com.google.ar.sceneform.Node;
+import com.google.ar.sceneform.math.Quaternion;
 import com.google.ar.sceneform.math.Vector3;
 import com.google.ar.sceneform.rendering.ModelRenderable;
+import com.timberr.ar.TBDemo.GuideCameraActivity;
+import com.timberr.ar.TBDemo.R;
 
 import java.util.concurrent.CompletableFuture;
 
@@ -18,34 +24,21 @@ public class AugmentedImageNode extends AnchorNode {
 
     // The augmented image represented by this node.
     private AugmentedImage image;
-
-    // Models of the 4 corners.  We use completable futures here to simplify
+    private Node node;
+    // We use completable futures here to simplify
     // the error handling and asynchronous loading.  The loading is started with the
     // first construction of an instance, and then used when the image is set.
-    private static CompletableFuture<ModelRenderable> ulCorner;
-    private static CompletableFuture<ModelRenderable> urCorner;
-    private static CompletableFuture<ModelRenderable> lrCorner;
-    private static CompletableFuture<ModelRenderable> llCorner;
-
+    private CompletableFuture<ModelRenderable> renderable;
     public AugmentedImageNode(Context context) {
         // Upon construction, start loading the models for the corners of the frame.
-        if (ulCorner == null) {
-            ulCorner =
-                    ModelRenderable.builder()
-                            .setSource(context, Uri.parse("models/frame_upper_left.sfb"))
-                            .build();
-            urCorner =
-                    ModelRenderable.builder()
-                            .setSource(context, Uri.parse("models/frame_upper_right.sfb"))
-                            .build();
-            llCorner =
-                    ModelRenderable.builder()
-                            .setSource(context, Uri.parse("models/frame_lower_left.sfb"))
-                            .build();
-            lrCorner =
-                    ModelRenderable.builder()
-                            .setSource(context, Uri.parse("models/frame_lower_right.sfb"))
-                            .build();
+        if (renderable == null) {
+            renderable = ModelRenderable.builder()
+                    .setSource(
+                            context,
+                            R.raw.millicharv2)
+                    .setIsFilamentGltf(true)
+                    .build();
+
         }
     }
 
@@ -59,9 +52,9 @@ public class AugmentedImageNode extends AnchorNode {
     public void setImage(AugmentedImage image) {
         this.image = image;
 
-        // If any of the models are not loaded, then recurse when all are loaded.
-        if (!ulCorner.isDone() || !urCorner.isDone() || !llCorner.isDone() || !lrCorner.isDone()) {
-            CompletableFuture.allOf(ulCorner, urCorner, llCorner, lrCorner)
+        // If the models are not loaded, then recurse when all are loaded.
+        if (!renderable.isDone()) {
+            CompletableFuture.allOf(renderable)
                     .thenAccept((Void aVoid) -> setImage(image))
                     .exceptionally(
                             throwable -> {
@@ -73,37 +66,21 @@ public class AugmentedImageNode extends AnchorNode {
         // Set the anchor based on the center of the image.
         setAnchor(image.createAnchor(image.getCenterPose()));
 
-        // Make the 4 corner nodes.
         Vector3 localPosition = new Vector3();
-        Node cornerNode;
+        localPosition.set(0.07f , 0.0f, 0.2f );
+        node = new Node();
+        node.setParent(this);
+        node.setLocalScale(new Vector3( 0.1f,0.1f,0.1f));
+        node.setLocalPosition(localPosition);
+        node.setRenderable(renderable.getNow(null));
+        Log.d(TAG, "setImage: "+ node.getRenderableInstance());
+    }
 
-        // Upper left corner.
-        localPosition.set(-0.5f * image.getExtentX(), 0.0f, -0.5f * image.getExtentZ());
-        cornerNode = new Node();
-        cornerNode.setParent(this);
-        cornerNode.setLocalPosition(localPosition);
-        cornerNode.setRenderable(ulCorner.getNow(null));
-
-        // Upper right corner.
-        localPosition.set(0.5f * image.getExtentX(), 0.0f, -0.5f * image.getExtentZ());
-        cornerNode = new Node();
-        cornerNode.setParent(this);
-        cornerNode.setLocalPosition(localPosition);
-        cornerNode.setRenderable(urCorner.getNow(null));
-
-        // Lower right corner.
-        localPosition.set(0.5f * image.getExtentX(), 0.0f, 0.5f * image.getExtentZ());
-        cornerNode = new Node();
-        cornerNode.setParent(this);
-        cornerNode.setLocalPosition(localPosition);
-        cornerNode.setRenderable(lrCorner.getNow(null));
-
-        // Lower left corner.
-        localPosition.set(-0.5f * image.getExtentX(), 0.0f, 0.5f * image.getExtentZ());
-        cornerNode = new Node();
-        cornerNode.setParent(this);
-        cornerNode.setLocalPosition(localPosition);
-        cornerNode.setRenderable(llCorner.getNow(null));
+    public FilamentAsset getAsset() throws NullPointerException{
+        if (node.getRenderableInstance()!=null)
+            return node.getRenderableInstance().getFilamentAsset();
+        else
+            return null;
     }
 
     public AugmentedImage getImage() {

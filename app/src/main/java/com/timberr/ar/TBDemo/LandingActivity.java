@@ -50,6 +50,10 @@ public class LandingActivity extends AppCompatActivity {
         if (!PermissionHelper.hasPermission(this)) {
             PermissionHelper.requestPermissions(this);
         }
+        if (rabbitCtaAnimation!=null)
+            rabbitCtaAnimation.stop();
+        if (rabbitIdleAnimation!=null)
+            rabbitIdleAnimation.stop();
 
         /* New Handler to start the rabbit idle animation
          */
@@ -57,7 +61,10 @@ public class LandingActivity extends AppCompatActivity {
             @Override
             public void run() {
                 /* Create an Intent that will start the Menu-Activity. */
+                if (rabbitCtaAnimation!=null)
+                    rabbitCtaAnimation.stop();
                 rabbit.setBackgroundResource(R.drawable.rabbit_idle);
+
                 rabbitIdleAnimation = (AnimationDrawable) rabbit.getBackground();
                 rabbitIdleAnimation.start();
             }
@@ -69,23 +76,20 @@ public class LandingActivity extends AppCompatActivity {
             @Override
             public void run() {
                 /* Create an Intent that will start the Menu-Activity. */
-                rabbitIdleAnimation.stop();
+                if (rabbitIdleAnimation!=null)
+                    rabbitIdleAnimation.stop();
                 rabbit.setBackgroundResource(R.drawable.rabbit_cta);
 
                 rabbitCtaAnimation = (AnimationDrawable) rabbit.getBackground();
                 rabbitCtaAnimation.start();
             }
-        }, 10*1000);
+        }, 15*1000);
     }
 
     @Override
     protected void onPause() {
         super.onPause();
         audio.stopPlaying();
-        if (rabbitCtaAnimation!=null)
-            rabbitCtaAnimation.stop();
-        if (rabbitIdleAnimation!=null)
-            rabbitIdleAnimation.stop();
     }
 
     @Override
