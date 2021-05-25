@@ -2,12 +2,10 @@ package com.timberr.ar.TBDemo;
 
 import android.content.Intent;
 import android.os.Handler;
-import android.support.v7.app.AppCompatActivity;
+import androidx.appcompat.app.AppCompatActivity;
 import android.os.Bundle;
 import android.widget.Toast;
 import android.widget.VideoView;
-
-import java.io.IOException;
 
 public class VideoPreviewActivity extends AppCompatActivity {
     private VideoView mediaViewer;

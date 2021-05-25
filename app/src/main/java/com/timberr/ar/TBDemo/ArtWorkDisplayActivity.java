@@ -11,8 +11,10 @@ import android.media.CamcorderProfile;
 import android.os.Build;
 import android.os.Build.VERSION_CODES;
 import android.os.Bundle;
-import android.support.annotation.NonNull;
-import android.support.v7.app.AppCompatActivity;
+import androidx.annotation.NonNull;
+import androidx.constraintlayout.widget.ConstraintLayout;
+import androidx.constraintlayout.widget.ConstraintSet;
+import androidx.appcompat.app.AppCompatActivity;
 import android.util.ArraySet;
 import android.util.Log;
 import android.view.Gravity;
@@ -42,6 +44,7 @@ import com.google.ar.sceneform.Scene;
 import com.google.ar.sceneform.math.Vector3;
 import com.google.ar.sceneform.rendering.ModelRenderable;
 import com.google.ar.sceneform.rendering.Renderable;
+import com.timberr.ar.TBDemo.Utils.FrameSelector;
 import com.timberr.ar.TBDemo.Utils.BearingProvider;
 import com.timberr.ar.TBDemo.Utils.ArtworkDisplayARFragment;
 import com.timberr.ar.TBDemo.Utils.FileUtils;
@@ -71,7 +74,7 @@ public class ArtWorkDisplayActivity extends AppCompatActivity implements Bearing
   private int width;
 
   private ImageView nav_compass;
-  private View frame;
+  private ImageView frame;
   private Button snap;
   private Button back;
   private Button photo_btn;
@@ -110,6 +113,7 @@ public class ArtWorkDisplayActivity extends AppCompatActivity implements Bearing
       arFragment = (ArtworkDisplayARFragment) getSupportFragmentManager().findFragmentById(R.id.artwork_fragment);
       nav_compass=findViewById(R.id.nav_compass_art);
       frame=findViewById(R.id.frame);
+      frame.setBackgroundResource(FrameSelector.chooseFrame());
       snap=findViewById(R.id.snap);
       back=findViewById(R.id.back);
       photo_btn=findViewById(R.id.photo_btn);
@@ -207,7 +211,7 @@ public class ArtWorkDisplayActivity extends AppCompatActivity implements Bearing
     //take picture from the AR Scene View
     private void takePhoto() {
         ArSceneView view = arFragment.getArSceneView();
-        PhotoHelper.takePhoto(this,view);
+        PhotoHelper.takePhoto(this,view,FrameSelector.chooseFrame());
 
     }
 
@@ -267,14 +271,18 @@ public class ArtWorkDisplayActivity extends AppCompatActivity implements Bearing
     //change to photo-mode view
     private void setCameraPreview_Frame()
     {
-        RelativeLayout rel_Camera_Preview = (RelativeLayout)findViewById(R.id.rel_Camera_Preview);
-        int width = rel_Camera_Preview.getWidth();
-        int height = rel_Camera_Preview.getHeight();
-
         if(width<height)
             height = width;
         else
             width = height;
+        ConstraintLayout parentLayout = (ConstraintLayout)findViewById(R.id.parent_layout);
+        ConstraintSet set = new ConstraintSet();
+
+        set.clone(parentLayout);
+        // connect start and end point of views, in this case top of child to top of parent.
+        set.constrainWidth(R.id.rel_Camera_Preview, width);
+        set.constrainHeight(R.id.rel_Camera_Preview, height);
+        set.applyTo(parentLayout);
         RelativeLayout.LayoutParams layoutParams = new RelativeLayout.LayoutParams(width, height);
         layoutParams.addRule(RelativeLayout.CENTER_IN_PARENT, RelativeLayout.TRUE);
         arFragment.getView().setLayoutParams(layoutParams);
@@ -337,9 +345,9 @@ public class ArtWorkDisplayActivity extends AppCompatActivity implements Bearing
 
       //Non-transformable renderable created
       Node tbArt= new Node();
-      tbArt.setParent(anchorNode);
       tbArt.setWorldPosition(new Vector3(anchor.getPose().tx(),anchor.getPose().compose(Pose.makeTranslation(0f,0.05f,0f)).ty(),anchor.getPose().tz()));
       tbArt.setRenderable(renderable);
+      tbArt.setParent(anchorNode);
       FilamentAsset filamentAsset = tbArt.getRenderableInstance().getFilamentAsset();
       if (filamentAsset.getAnimator().getAnimationCount() > 0) {
           animators.add(new AnimationInstance(filamentAsset.getAnimator(), 0, System.nanoTime()));

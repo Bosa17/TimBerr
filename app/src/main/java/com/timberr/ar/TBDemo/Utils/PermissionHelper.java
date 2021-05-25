@@ -5,20 +5,20 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.provider.Settings;
-import android.support.v4.app.ActivityCompat;
-import android.support.v4.content.ContextCompat;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 
 /** Helper to ask camera permission. */
 public final class PermissionHelper {
-    private static final int CAMERA_PERMISSION_CODE = 0;
-    private static final int INTERNET_PERMISSION_CODE = 1;
-    private static final int LOCATION_PERMISSION_CODE = 2;
-    private static final int STORAGE_PERMISSION_CODE = 3;
-    private static final int ALL_PERMISSION_CODE = 4;
-    private static final String CAMERA_PERMISSION = Manifest.permission.CAMERA;
-    private static final String INTERNET_PERMISSION = Manifest.permission.INTERNET;
-    private static final String LOCATION_PERMISSION = Manifest.permission.ACCESS_FINE_LOCATION;
-    private static final String STORAGE_PERMISSION = Manifest.permission.WRITE_EXTERNAL_STORAGE;
+    public static final int CAMERA_PERMISSION_CODE = 0;
+    public static final int INTERNET_PERMISSION_CODE = 1;
+    public static final int LOCATION_PERMISSION_CODE = 2;
+    public static final int STORAGE_PERMISSION_CODE = 3;
+    public static final int ALL_PERMISSION_CODE = 4;
+    public static final String CAMERA_PERMISSION = Manifest.permission.CAMERA;
+    public static final String INTERNET_PERMISSION = Manifest.permission.INTERNET;
+    public static final String LOCATION_PERMISSION = Manifest.permission.ACCESS_FINE_LOCATION;
+    public static final String STORAGE_PERMISSION = Manifest.permission.WRITE_EXTERNAL_STORAGE;
 
     /** Check to see we have the necessary permissions for this app. */
     public static boolean hasPermission(Activity activity) {

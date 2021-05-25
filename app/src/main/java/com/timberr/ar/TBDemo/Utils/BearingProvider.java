@@ -7,15 +7,13 @@ import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.location.Location;
-import android.location.LocationListener;
 import android.location.LocationManager;
-import android.os.Bundle;
 import android.util.Log;
 
 /**
  * Utility class that provides bearing values to destination and calculates distance.
  */
-public class BearingProvider implements SensorEventListener, LocationListener
+public class BearingProvider implements SensorEventListener
 {
     public static final String TAG = "BearingToNorthProvider";
 
@@ -102,7 +100,7 @@ public class BearingProvider implements SensorEventListener, LocationListener
      * @param context Application Context
      */
     public BearingProvider(Context context) {
-        this(context, 10, 0.5, 500);
+        this(context, 7, 3, 700);
     }
 
     /**
@@ -132,6 +130,13 @@ public class BearingProvider implements SensorEventListener, LocationListener
         mThrottleTime = throttleTime;
 
         mAzimuthRadians = new AverageAngle(smoothing);
+
+
+    }
+
+    public void resume(){
+        mSensorManager.registerListener(this, mSensorAccelerometer, SensorManager.SENSOR_DELAY_UI);
+        mSensorManager.registerListener(this, mSensorMagneticField, SensorManager.SENSOR_DELAY_UI);
     }
 
     //==============================================================================================
@@ -143,17 +148,7 @@ public class BearingProvider implements SensorEventListener, LocationListener
      */
     public void start(Location loc)
     {
-        mSensorManager.registerListener(this, mSensorAccelerometer, SensorManager.SENSOR_DELAY_UI);
-        mSensorManager.registerListener(this, mSensorMagneticField, SensorManager.SENSOR_DELAY_UI);
         destination=loc;
-        for (final String provider : mLocationManager.getProviders(true)) {
-            if (LocationManager.GPS_PROVIDER.equals(provider)) {
-                if (mLocation == null) {
-                    mLocation = mLocationManager.getLastKnownLocation(provider);
-                }
-                mLocationManager.requestLocationUpdates(provider, 0, 3.0f, this);
-            }
-        }
         calculcateDistance();
     }
 
@@ -164,7 +159,6 @@ public class BearingProvider implements SensorEventListener, LocationListener
     {
         mSensorManager.unregisterListener(this, mSensorAccelerometer);
         mSensorManager.unregisterListener(this, mSensorMagneticField);
-        mLocationManager.removeUpdates(this);
     }
 
     /**
@@ -231,25 +225,17 @@ public class BearingProvider implements SensorEventListener, LocationListener
     // LocationListener implementation
     //==============================================================================================
 
-    @Override
     public void onLocationChanged(Location location)
     {
-        // set the new location
-        this.mLocation = location;
-        //calculate the new distance
-        calculcateDistance();
-        // update mBearing
-        updateBearing();
+        if (location!=null) {
+            // set the new location
+            this.mLocation = location;
+            //calculate the new distance
+            calculcateDistance();
+            // update mBearing
+            updateBearing();
+        }
     }
-
-    @Override
-    public void onStatusChanged(String s, int i, Bundle bundle) {   }
-
-    @Override
-    public void onProviderEnabled(String s) {   }
-
-    @Override
-    public void onProviderDisabled(String s) {   }
 
     //==============================================================================================
     // Private Utilities
@@ -284,18 +270,18 @@ public class BearingProvider implements SensorEventListener, LocationListener
 
         double bearing = start.bearingTo(dest);
         degree = (bearing - degree) * -1;
-//        degree = normalizeDegree(degree);
+        degree = normalizeDegree(degree);
 
         return degree;
     }
 
-//    private double normalizeDegree(double value) {
-//        if (value >= 0.0f && value <= 180.0f) {
-//            return value;
-//        } else {
-//            return 180 + (180 + value);
-//        }
-//    }
+        private double normalizeDegree(double value) {
+        if (value >= 0.0f && value <= 180.0f) {
+            return value;
+        } else {
+            return 180 + (180 + value);
+        }
+    }
     private GeomagneticField getGeomagneticField(Location location)
     {
         GeomagneticField geomagneticField = new GeomagneticField(
@@ -312,10 +298,12 @@ public class BearingProvider implements SensorEventListener, LocationListener
             Location.distanceBetween(
                     mLocation.getLatitude(), mLocation.getLongitude(),
                     destination.getLatitude(), destination.getLongitude(), results);
+            Log.d(TAG, "calculcateDistance: "+results[0]);
+            if (results[0]<=20){
+                mChangeEventListener.onLocationReached();
+            }
+
+            mChangeEventListener.onDistanceChanged(results[0]);
         }
-        if (results[0]<=20){
-            mChangeEventListener.onLocationReached();
-        }
-        mChangeEventListener.onDistanceChanged(results[0]);
     }
 }

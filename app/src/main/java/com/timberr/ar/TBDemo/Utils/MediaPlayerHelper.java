@@ -7,7 +7,6 @@ import android.media.MediaPlayer;
 import android.view.Surface;
 import android.widget.Toast;
 
-import com.chillingvan.canvasgl.util.Loggers;
 
 import java.io.IOException;
 import java.util.Random;
@@ -60,7 +59,7 @@ public class MediaPlayerHelper {
         mediaPlayer.setOnSeekCompleteListener(new MediaPlayer.OnSeekCompleteListener() {
             @Override
             public void onSeekComplete(MediaPlayer mediaPlayer) {
-                Loggers.i("onSeekComplete","onSeekComplete----"+mediaPlayer.getCurrentPosition());
+
             }
         });
 

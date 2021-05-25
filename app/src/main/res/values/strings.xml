@@ -14,5 +14,6 @@
    limitations under the License.
 -->
 <resources>
-    <string name="app_name">TB Demo</string>
+    <string name="app_name">TB BILDERREISE</string>
+    <string name="distance_remaining">Distance Remaining to next Checkpoint : </string>
 </resources>

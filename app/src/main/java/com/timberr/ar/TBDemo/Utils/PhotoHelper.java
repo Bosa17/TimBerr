@@ -19,7 +19,7 @@ public class PhotoHelper {
 
 
     //take picture from the AR Scene View
-    public static void takePhoto(Context context,ArSceneView view ) {
+    public static void takePhoto(Context context,ArSceneView view, int frameID) {
 
         // Create a bitmap the size of the scene view.
         final Bitmap bitmap = Bitmap.createBitmap(view.getWidth(), view.getHeight(),
@@ -31,7 +31,7 @@ public class PhotoHelper {
         PixelCopy.request(view, bitmap, (copyResult) -> {
             if (copyResult == PixelCopy.SUCCESS) {
                 try {
-                    new AppearGallery(context, FileUtils.storeImage(overlay(context,bitmap)));
+                    new AppearGallery(context, FileUtils.storeImage(overlay(context,bitmap,frameID)));
 
                 } catch (Exception e) {
                     Toast toast = Toast.makeText(context,e.toString(),
@@ -50,9 +50,9 @@ public class PhotoHelper {
         }, new Handler(handlerThread.getLooper()));
     }
 
-    private static Bitmap overlay(Context context,Bitmap bmp1) {
+    private static Bitmap overlay(Context context,Bitmap bmp1,int frameID) {
         Bitmap bmp2=BitmapFactory.decodeResource(context.getResources(),
-                R.drawable.photo_frame);
+                frameID);
         bmp2= getResizedBitmap(bmp2,bmp1.getWidth(), bmp1.getHeight());
         Bitmap bmOverlay = Bitmap.createBitmap(bmp1.getWidth(), bmp1.getHeight(), bmp1.getConfig());
         Canvas canvas = new Canvas(bmOverlay);

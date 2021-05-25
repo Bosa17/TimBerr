@@ -1,12 +1,12 @@
 package com.timberr.ar.TBDemo.Utils;
 
 import android.content.Context;
-import android.support.annotation.Nullable;
+import androidx.annotation.Nullable;
 import android.util.AttributeSet;
 import android.view.MotionEvent;
 import android.view.View;
 
-public class PhotoVideoButton extends android.support.v7.widget.AppCompatButton {
+public class PhotoVideoButton extends androidx.appcompat.widget.AppCompatButton {
 
 
     public PhotoVideoButton(Context context) {

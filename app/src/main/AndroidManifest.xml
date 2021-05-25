@@ -8,11 +8,16 @@
          "AR Optional" apps must declare minSdkVersion ≥ 14
     -->
     <!-- Always needed for AR. -->
-    <uses-permission android:name="android.permission.CAMERA" /> <!-- Internet required for navigation to destination -->
-    <uses-permission android:name="android.permission.INTERNET" /> <!-- Access location details for navigation -->
-    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" /> <!-- Read and write permissions for storing and sharing images -->
+    <uses-permission android:name="android.permission.CAMERA" />
+    <!-- Internet required for navigation to destination -->
+    <uses-permission android:name="android.permission.INTERNET" />
+    <!-- Access location details for navigation -->
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+    <!-- Read and write permissions for storing and sharing images -->
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" /> <!-- Sceneform requires OpenGLES 3.0 or later. -->
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE"/>
     <uses-feature
         android:glEsVersion="0x00030000"
         android:required="true" /> <!-- Location feature for tracking and navigation -->
@@ -42,13 +47,14 @@
         <service
             android:name=".Utils.LocationService"
             android:enabled="true"
-            android:exported="true"></service>
+            android:exported="true"
+            android:foregroundServiceType="location" />
 
         <activity android:name=".VideoPreviewActivity" />
         <activity android:name=".PicturePreviewActivity" />
 
         <provider
-            android:name="android.support.v4.content.FileProvider"
+            android:name="androidx.core.content.FileProvider"
             android:authorities="${applicationId}.com.timberr.ar.TBDemo.provider"
             android:exported="false"
             android:grantUriPermissions="true">
