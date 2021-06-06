@@ -1,10 +1,13 @@
-
 package com.timberr.ar.TBDemo;
 
 import android.app.Activity;
 import android.app.ActivityManager;
+import android.content.BroadcastReceiver;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
+import android.content.ServiceConnection;
 import android.content.res.Configuration;
 import android.location.Location;
 import android.media.CamcorderProfile;
@@ -15,11 +18,15 @@ import androidx.annotation.NonNull;
 import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.constraintlayout.widget.ConstraintSet;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.localbroadcastmanager.content.LocalBroadcastManager;
+
+import android.os.IBinder;
 import android.util.ArraySet;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.ViewGroup;
 import android.view.animation.Animation;
 import android.view.animation.RotateAnimation;
 import android.widget.Button;
@@ -29,6 +36,7 @@ import android.widget.Toast;
 
 import com.google.android.filament.gltfio.Animator;
 import com.google.android.filament.gltfio.FilamentAsset;
+import com.google.android.gms.maps.model.LatLng;
 import com.google.ar.core.Anchor;
 import com.google.ar.core.Frame;
 import com.google.ar.core.HitResult;
@@ -44,10 +52,13 @@ import com.google.ar.sceneform.Scene;
 import com.google.ar.sceneform.math.Vector3;
 import com.google.ar.sceneform.rendering.ModelRenderable;
 import com.google.ar.sceneform.rendering.Renderable;
+import com.google.ar.sceneform.ux.HandMotionView;
+import com.timberr.ar.TBDemo.Utils.DataHelper;
 import com.timberr.ar.TBDemo.Utils.FrameSelector;
 import com.timberr.ar.TBDemo.Utils.BearingProvider;
 import com.timberr.ar.TBDemo.Utils.ArtworkDisplayARFragment;
 import com.timberr.ar.TBDemo.Utils.FileUtils;
+import com.timberr.ar.TBDemo.Utils.LocationService;
 import com.timberr.ar.TBDemo.Utils.PermissionHelper;
 import com.timberr.ar.TBDemo.Utils.PhotoHelper;
 import com.timberr.ar.TBDemo.Utils.ScreenUtil;
@@ -64,15 +75,18 @@ import static java.util.concurrent.TimeUnit.SECONDS;
 public class ArtWorkDisplayActivity extends AppCompatActivity implements BearingProvider.ChangeEventListener, Scene.OnUpdateListener, FileUtils.photoSavedListener, VideoRecorder.VideoSavedListener {
   private static final String TAG = ArtWorkDisplayActivity.class.getSimpleName();
   private static final double MIN_OPENGL_VERSION = 3.0;
+  private DataHelper dataHelper;
   private Location target;
   private float currentDegree = 0f;
   private BearingProvider mBearingProvider;
   private boolean isRenderablePlaced;
   private boolean isPhotoVdoMode;
+    private boolean isTargetReached;
   private VideoRecorder videoRecorder;
   private int height;
   private int width;
-
+  // The BroadcastReceiver used to listen from broadcasts from the service
+  private MyReceiver myReceiver;
   private ImageView nav_compass;
   private ImageView frame;
   private Button snap;
@@ -81,9 +95,7 @@ public class ArtWorkDisplayActivity extends AppCompatActivity implements Bearing
   private ArtworkDisplayARFragment arFragment;
   private Renderable renderable;
 
-
-
-    private static class AnimationInstance {
+  private static class AnimationInstance {
        Animator animator;
        Long startTime;
        float duration;
@@ -96,7 +108,26 @@ public class ArtWorkDisplayActivity extends AppCompatActivity implements Bearing
        }
   }
   private final Set<AnimationInstance> animators = new ArraySet<>();
+  // A reference to the service used to get location updates.
+  private LocationService mService = null;
 
+  // Tracks the bound state of the service.
+  private boolean mBound = false;
+  // Monitors the state of the connection to the service.
+  private final ServiceConnection mServiceConnection = new ServiceConnection() {
+        @Override
+        public void onServiceConnected(ComponentName name, IBinder service) {
+            LocationService.LocalBinder binder = (LocationService.LocalBinder) service;
+            mService = binder.getService();
+            mBound = true;
+        }
+
+        @Override
+        public void onServiceDisconnected(ComponentName name) {
+            mService = null;
+            mBound = false;
+        }
+    };
   @Override
   @SuppressWarnings({"AndroidApiChecker", "FutureReturnValueIgnored"})
   // CompletableFuture requires api level 24
@@ -110,16 +141,92 @@ public class ArtWorkDisplayActivity extends AppCompatActivity implements Bearing
       height = ScreenUtil.getScreenHeight(this);
       width = ScreenUtil.getScreenWidth(this);
       setContentView(R.layout.activity_ux);
+      dataHelper=new DataHelper(this);
       arFragment = (ArtworkDisplayARFragment) getSupportFragmentManager().findFragmentById(R.id.artwork_fragment);
       nav_compass=findViewById(R.id.nav_compass_art);
       frame=findViewById(R.id.frame);
-      frame.setBackgroundResource(FrameSelector.chooseFrame());
+      dataHelper.setFrame(FrameSelector.chooseFrame());
+      frame.setBackgroundResource(dataHelper.getFrame());
       snap=findViewById(R.id.snap);
       back=findViewById(R.id.back);
       photo_btn=findViewById(R.id.photo_btn);
-      target=new Location("next");
-      target.setLatitude(50.768094);
-      target.setLongitude(6.090876);
+      int arAssetDrawable=R.raw.wassenberg;
+      target=new Location("artwork");
+      switch (dataHelper.getArtworkReached()){
+          case 1:
+              target.setLatitude(51.099086);
+              target.setLongitude(6.159257);
+              arAssetDrawable=R.raw.wassenberg;
+              break;
+          case 2:
+              target.setLatitude(51.100892);
+              target.setLongitude(6.15771);
+              arAssetDrawable=R.raw.burgwassenberg;
+              break;
+          case 3:
+              target.setLatitude(51.131239);
+              target.setLongitude(6.089418);
+              arAssetDrawable=R.raw.effeld2;
+              break;
+          case 4:
+              target.setLatitude(51.072432);
+              target.setLongitude(5.992083);
+              arAssetDrawable=R.raw.motte;
+              break;
+          case 5:
+              target.setLatitude(51.031573);
+              target.setLongitude(5.985918);
+              arAssetDrawable=R.raw.brebern2;
+              break;
+          case 6:
+              target.setLatitude(51.013813);
+              target.setLongitude(6.037959);
+              arAssetDrawable=R.raw.selfkant;
+              break;
+          case 7:
+              target.setLatitude(51.06025);
+              target.setLongitude(6.093267);
+              arAssetDrawable=R.raw.heinsberg;
+              break;
+          case 8:
+              target.setLatitude(51.058228);
+              target.setLongitude(6.173339);
+              arAssetDrawable=R.raw.adolfosee;
+              break;
+          case 9:
+              target.setLatitude(51.050628);
+              target.setLongitude(6.204579);
+              arAssetDrawable=R.raw.millcoh;
+              break;
+          case 10:
+              target.setLatitude(51.056557);
+              target.setLongitude(6.208612);
+              arAssetDrawable=R.raw.millich2;
+              break;
+          case 11:
+              target.setLatitude(51.068524);
+              target.setLongitude(6.277999);
+              arAssetDrawable=R.raw.hh;
+              break;
+          case 12:
+              target.setLatitude(51.068119);
+              target.setLongitude(6.278686);
+              arAssetDrawable=R.raw.hh2;
+              break;
+          case 13:
+              target.setLatitude(51.121186);
+              target.setLongitude(6.264326);
+              arAssetDrawable=R.raw.tuichenundgebackenesobst;
+              break;
+          case 14:
+              target.setLatitude(51.104477);
+              target.setLongitude(6.177899);
+              arAssetDrawable=R.raw.trauerweider;
+              break;
+
+      }
+      isTargetReached=false;
+      myReceiver = new MyReceiver();
       mBearingProvider = new BearingProvider(this);
       mBearingProvider.setChangeEventListener(this);
       videoRecorder=new VideoRecorder(this);
@@ -134,7 +241,7 @@ public class ArtWorkDisplayActivity extends AppCompatActivity implements Bearing
       ModelRenderable.builder()
               .setSource(
                       this,
-                      R.raw.millicharv2)
+                      arAssetDrawable)
               .setIsFilamentGltf(true)
               .build()
               .thenAccept(
@@ -211,8 +318,7 @@ public class ArtWorkDisplayActivity extends AppCompatActivity implements Bearing
     //take picture from the AR Scene View
     private void takePhoto() {
         ArSceneView view = arFragment.getArSceneView();
-        PhotoHelper.takePhoto(this,view,FrameSelector.chooseFrame());
-
+        PhotoHelper.takePhoto(this,view,dataHelper.getFrame());
     }
 
     //function to take vdo
@@ -229,13 +335,22 @@ public class ArtWorkDisplayActivity extends AppCompatActivity implements Bearing
     }
 
     @Override
+    protected void onStart() {
+        super.onStart();
+        arFragment.getPlaneDiscoveryController().hide();
+        bindService(new Intent(this, LocationService.class), mServiceConnection,
+                Context.BIND_AUTO_CREATE);
+    }
+
+    @Override
     protected void onResume()
     {
         super.onResume();
         if(!PermissionHelper.hasLocationPermission(this)){
             PermissionHelper.requestLocationPermission(this);
-        }else if (!isPhotoVdoMode){
-            mBearingProvider.start(target);
+        }else if (!isPhotoVdoMode && !isTargetReached){
+            mBearingProvider.resume();
+            mBearingProvider.realign(target);
         }
         arFragment.onResume();
         try {
@@ -243,11 +358,14 @@ public class ArtWorkDisplayActivity extends AppCompatActivity implements Bearing
         } catch (CameraNotAvailableException e) {
             e.printStackTrace();
         }
+        LocalBroadcastManager.getInstance(this).registerReceiver(myReceiver,
+                new IntentFilter(LocationService.ACTION_BROADCAST));
     }
 
     @Override
     protected void onPause()
     {
+        LocalBroadcastManager.getInstance(this).unregisterReceiver(myReceiver);
         super.onPause();
         if (videoRecorder.isRecording())
             toggleVideo();
@@ -267,7 +385,26 @@ public class ArtWorkDisplayActivity extends AppCompatActivity implements Bearing
         frame.setVisibility(View.VISIBLE);
     }
 
-
+    /**
+     * Receiver for broadcasts sent by {@link LocationService}.
+     */
+    private class MyReceiver extends BroadcastReceiver {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            Location location = intent.getParcelableExtra(LocationService.EXTRA_LOCATION);
+            if (location != null) {
+                Log.d(TAG, "onReceive: "+isTargetReached);
+                mBearingProvider.onLocationChanged(location);
+                if (location.distanceTo(target)<=20){
+                    isTargetReached=true;
+                    mBearingProvider.stop();
+                    nav_compass.clearAnimation();
+                    nav_compass.setVisibility(View.GONE);
+                    arFragment.getPlaneDiscoveryController().show();
+                }
+            }
+        }
+    }
     //change to photo-mode view
     private void setCameraPreview_Frame()
     {
@@ -317,19 +454,21 @@ public class ArtWorkDisplayActivity extends AppCompatActivity implements Bearing
 
     @Override
     public void onUpdate(FrameTime frameTime) {
-        Frame frame=arFragment.getArSceneView().getArFrame();
-        assert frame != null;
-        Collection<Plane> planes=frame.getUpdatedTrackables(Plane.class);
-        for (Plane plane : planes) {
-            //check to see if plane is being tracked by ARCore
-            if (plane.getTrackingState() == TrackingState.TRACKING && !isRenderablePlaced){
-                List<HitResult> hitResults= frame.hitTest(screenCentre().x,screenCentre().y);
-                for (HitResult hitResult:hitResults){
-                    //create Anchor
-                    Anchor anchor=plane.createAnchor(hitResult.getHitPose());
-                    placeRenderable(anchor);
-                }
+        if (isTargetReached) {
+            Frame frame = arFragment.getArSceneView().getArFrame();
+            assert frame != null;
+            Collection<Plane> planes = frame.getUpdatedTrackables(Plane.class);
+            for (Plane plane : planes) {
+                //check to see if plane is being tracked by ARCore
+                if (plane.getTrackingState() == TrackingState.TRACKING && !isRenderablePlaced) {
+                    List<HitResult> hitResults = frame.hitTest(screenCentre().x, screenCentre().y);
+                    for (HitResult hitResult : hitResults) {
+                        //create Anchor
+                        Anchor anchor = plane.createAnchor(hitResult.getHitPose());
+                        placeRenderable(anchor);
+                    }
 
+                }
             }
         }
     }
@@ -373,15 +512,6 @@ public class ArtWorkDisplayActivity extends AppCompatActivity implements Bearing
       renderable=null;
     }
 
-    @Override
-    public void onLocationReached() {
-
-    }
-
-    @Override
-    public void onDistanceChanged(float distance) {
-
-    }
 
     /**
    * Returns false and displays an error message if Sceneform can not run, true if Sceneform can run

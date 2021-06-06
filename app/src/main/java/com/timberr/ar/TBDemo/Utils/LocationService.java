@@ -29,6 +29,7 @@ import com.google.android.gms.location.LocationResult;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
+import com.timberr.ar.TBDemo.ArtWorkDisplayActivity;
 import com.timberr.ar.TBDemo.NavigationActivity;
 import com.timberr.ar.TBDemo.R;
 
@@ -36,6 +37,7 @@ import org.xmlpull.v1.XmlPullParserException;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.List;
 
 import io.ticofab.androidgpxparser.parser.GPXParser;
@@ -46,11 +48,11 @@ import io.ticofab.androidgpxparser.parser.domain.TrackSegment;
 
 public class LocationService extends Service  {
 
-    private BearingProvider mBearingProvider;
-
     private static final String PACKAGE_NAME =
             "com.timberr.ar.TBDemo";
     private static final String TAG = LocationService.class.getSimpleName();
+
+    private DataHelper dataHelper;
 
     /**
      * The name of the channel for notifications.
@@ -58,17 +60,19 @@ public class LocationService extends Service  {
     private static final String CHANNEL_ID = "channel_tb_bilderreise";
 
     public static final String ACTION_BROADCAST = PACKAGE_NAME + ".broadcast";
-
+    public static final String EXTRA_GPSFILE = PACKAGE_NAME + ".gpxfile";
     public static final String EXTRA_LOCATION = PACKAGE_NAME + ".location";
-    private static final String EXTRA_STARTED_FROM_NOTIFICATION = PACKAGE_NAME +
-            ".started_from_notification";
+    private static final String EXTRA_STARTED_FROM_NOTIFICATION = PACKAGE_NAME + ".started_from_notification";
+    public static final String EXTRA_DISTANCE = PACKAGE_NAME + ".distance";
+    public static final String EXTRA_REACHED = PACKAGE_NAME + ".reached";
+    public static final String EXTRA_DESTINATION = PACKAGE_NAME + ".destination";
 
     private final IBinder mBinder = new LocalBinder();
 
     /**
      * The desired interval for location updates. Inexact. Updates may be more or less frequent.
      */
-    private static final long UPDATE_INTERVAL_IN_MILLISECONDS = 10000;
+    private static final long UPDATE_INTERVAL_IN_MILLISECONDS = 7000;
 
     /**
      * The fastest rate for active location updates. Updates will never be more frequent
@@ -80,7 +84,7 @@ public class LocationService extends Service  {
     /**
      * The identifier for the notification displayed for the foreground service.
      */
-    private static final int NOTIFICATION_ID = 12345678;
+    private static final int NOTIFICATION_ID = 30035;
 
     /**
      * Used to check whether the bound activity has really gone away and not unbound as part of an
@@ -113,8 +117,26 @@ public class LocationService extends Service  {
      */
     private Location mLocation;
 
+    /**
+     * The current destination.
+     */
+    private Location destination;
+
+    /**
+     * The list to store trackpoints*/
     private List<TrackPoint> trackpoints;
+
+    /**
+     * The list to store checkpoints*/
     private List<TrackPoint> checkpoints;
+
+    /**
+     * The trackpoint Iterator*/
+    private int trackIterator=0;
+
+    /**
+     * The checkpoint Iterator*/
+    private int checkIterator=0;
 
     private String gpxFile ;
 
@@ -129,10 +151,11 @@ public class LocationService extends Service  {
                 onNewLocation(locationResult.getLastLocation());
             }
         };
-
-//        parseGPX();
+        dataHelper=new DataHelper(this);
         createLocationRequest();
         getLastLocation();
+
+        destination = new Location("destination");
 
         HandlerThread handlerThread = new HandlerThread(TAG);
         handlerThread.start();
@@ -161,13 +184,6 @@ public class LocationService extends Service  {
             removeLocationUpdates();
             stopSelf();
         }
-        else {
-            try {
-                gpxFile = intent.getStringExtra("gpxFile");
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        }
         // Tells the system to not try to recreate the service after it has been killed.
         return START_NOT_STICKY;
     }
@@ -184,6 +200,18 @@ public class LocationService extends Service  {
         // and binds with this service. The service should cease to be a foreground service
         // when that happens.
         Log.i(TAG, "in onBind()");
+        try {
+            if (dataHelper.getRouteMode()==1)
+                gpxFile = "complete.gpx";
+            else if (dataHelper.getRouteMode()==2)
+                gpxFile = "west.gpx";
+            else
+                gpxFile = "east.gpx";
+            parseGPX();
+            parseArtworkGPX();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
         stopForeground(true);
         mChangingConfiguration = false;
         return mBinder;
@@ -259,7 +287,7 @@ public class LocationService extends Service  {
     private Notification getNotification() {
         Intent intent = new Intent(this, LocationService.class);
 
-        CharSequence text = LocationUtils.getLocationText(mLocation);
+        CharSequence text = Float.toString(checkpointDistance())+" metres";
 
         // Extra to help us figure out if we arrived in onStartCommand via the notification or not.
         intent.putExtra(EXTRA_STARTED_FROM_NOTIFICATION, true);
@@ -273,7 +301,7 @@ public class LocationService extends Service  {
                 new Intent(this, NavigationActivity.class), 0);
 
         NotificationCompat.Builder builder = new NotificationCompat.Builder(this)
-                .addAction(R.drawable.ic_launcher, "Launch activity",
+                .addAction(R.drawable.ic_launcher, "Navigate",
                         activityPendingIntent)
                 .addAction(R.drawable.ic_cancel, "Stop Route",
                         servicePendingIntent)
@@ -294,11 +322,79 @@ public class LocationService extends Service  {
         return builder.build();
     }
 
+    /**
+     * Returns the {@link NotificationCompat} used as part of the foreground service.
+     */
+    private Notification getArtworkReachedNotification() {
+
+        CharSequence text = "You are near an artwork, click here to open it!";
+        CharSequence title = "Artwork Nearby!";
+        // The PendingIntent to launch activity.
+        PendingIntent activityPendingIntent = PendingIntent.getActivity(this, 0,
+                new Intent(this, ArtWorkDisplayActivity.class), 0);
+
+        NotificationCompat.Builder builder = new NotificationCompat.Builder(this)
+                .setContentIntent(activityPendingIntent)
+                .setContentText(text)
+                .setOnlyAlertOnce(true)
+                .setContentTitle(title)
+                .setOngoing(true)
+                .setPriority(Notification.PRIORITY_HIGH)
+                .setSmallIcon(R.drawable.rabbit)
+                .setTicker(text)
+                .setWhen(System.currentTimeMillis());
+
+        // Set the Channel ID for Android O.
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            builder.setChannelId(CHANNEL_ID); // Channel ID
+        }
+
+        return builder.build();
+    }
+
     private void parseGPX(){
-        GPXParser gpxParser=new GPXParser();
+        if (gpxFile!=null) {
+            GPXParser gpxParser = new GPXParser();
+            Gpx parsedGpx = null;
+            try {
+                InputStream in = getAssets().open(gpxFile);
+                parsedGpx = gpxParser.parse(in);
+            } catch (IOException | XmlPullParserException e) {
+                // do something with this exception
+                e.printStackTrace();
+            }
+            if (parsedGpx == null) {
+                // error parsing track
+                Log.d(TAG, "onCreate: nope");
+            } else {
+                // do something with the parsed track
+                // see included example app and tests
+                List<Track> tracks = parsedGpx.getTracks();
+                for (int i = 0; i < tracks.size(); i++) {
+                    Track track = tracks.get(i);
+                    Log.d(TAG, "track " + i + ":");
+                    List<TrackSegment> segments = track.getTrackSegments();
+                    for (int j = 0; j < segments.size(); j++) {
+                        TrackSegment segment = segments.get(j);
+                        Log.d(TAG, "  segment " + j + ":");
+                        trackpoints = segment.getTrackPoints();
+                        for (TrackPoint trackPoint : segment.getTrackPoints()) {
+                            Log.d(TAG, "    point: lat " + trackPoint.getLatitude() + ", lon " + trackPoint.getLongitude() + " " + trackPoint.getName());
+                        }
+                    }
+                }
+            }
+            destination.setLatitude(trackpoints.get(trackIterator).getLatitude());
+            destination.setLongitude(trackpoints.get(trackIterator).getLongitude());
+        }
+    }
+
+    private void parseArtworkGPX(){
+        GPXParser gpxParser = new GPXParser();
+        checkpoints = new ArrayList<TrackPoint>();
         Gpx parsedGpx = null;
         try {
-            InputStream in = getAssets().open(gpxFile);
+            InputStream in = getAssets().open("artwork.gpx");
             parsedGpx = gpxParser.parse(in);
         } catch (IOException | XmlPullParserException e) {
             // do something with this exception
@@ -318,17 +414,75 @@ public class LocationService extends Service  {
                 for (int j = 0; j < segments.size(); j++) {
                     TrackSegment segment = segments.get(j);
                     Log.d(TAG, "  segment " + j + ":");
-                    trackpoints =segment.getTrackPoints();
-                    for (TrackPoint trackPoint : segment.getTrackPoints()) {
-                        if (trackPoint.getName()!=null)
-                            checkpoints.add(trackPoint);
-                        Log.d(TAG, "    point: lat " + trackPoint.getLatitude() + ", lon " + trackPoint.getLongitude()+" "+ trackPoint.getName());
+                    if (dataHelper.getRouteMode()==1) {
+
+                        checkpoints = segment.getTrackPoints();
+                    }
+                    else if (dataHelper.getRouteMode()==2) {
+                        checkpoints = segment.getTrackPoints().subList(0,7);
+                    }
+                    else {
+                        checkpoints = segment.getTrackPoints().subList(7,segment.getTrackPoints().size());
+                    }
+                    for (TrackPoint trackPoint :checkpoints) {
+                        Log.d(TAG, "    point: lat " + trackPoint.getLatitude() + ", lon " + trackPoint.getLongitude() + " " + trackPoint.getName());
                     }
                 }
             }
         }
-
     }
+
+    private boolean artworkReached(){
+        if(this.mLocation!=null) {
+            for (TrackPoint loc : checkpoints) {
+                Location tmp = new Location("tmp");
+                tmp.setLatitude(loc.getLatitude());
+                tmp.setLongitude(loc.getLongitude());
+                float result = mLocation.distanceTo(tmp);
+                Log.d(TAG, "AllcheckpointDistance: "+result);
+                if (result <= 100) {
+                    dataHelper.setArtworkReached(Integer.parseInt(loc.getName()));
+                    if (serviceIsRunningInForeground(this)) {
+                        mNotificationManager.notify(NOTIFICATION_ID+3, getArtworkReachedNotification());
+                    }
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    private float checkpointDistance(){
+        if(this.mLocation!=null) {
+            Location tmp = new Location("tmp");
+            tmp.setLatitude(checkpoints.get(checkIterator).getLatitude());
+            tmp.setLongitude(checkpoints.get(checkIterator).getLongitude());
+            float result= mLocation.distanceTo(tmp);
+            Log.d(TAG, "checkpointDistance: "+checkIterator+" "+result);
+            if (result<=50){
+                checkIterator=dataHelper.getArtworkReached()+1;
+            }
+            return result;
+        }
+        return 0.0f;
+    }
+
+    private void trackpointDistance(){
+        float[] results = new float[1];
+        if(this.mLocation!=null) {
+            Location.distanceBetween(
+                    mLocation.getLatitude(), mLocation.getLongitude(),
+                    destination.getLatitude(), destination.getLongitude(), results);
+            Log.d(TAG, "trackpointDistance: "+results[0]);
+            Log.d(TAG, "trackpointDistance: "+trackIterator+ " "+destination.getLongitude());
+            if (results[0]<=70){
+                trackIterator++;
+                destination.setLatitude(trackpoints.get(trackIterator).getLatitude());
+                destination.setLongitude(trackpoints.get(trackIterator).getLongitude());
+            }
+        }
+    }
+
     private void getLastLocation() {
         try {
             mFusedLocationClient.getLastLocation()
@@ -339,7 +493,7 @@ public class LocationService extends Service  {
                                 mLocation = task.getResult();
                                 Intent intent = new Intent(ACTION_BROADCAST);
                                 intent.putExtra(EXTRA_LOCATION, mLocation);
-
+                                intent.putExtra(EXTRA_DESTINATION,destination);
                                 LocalBroadcastManager.getInstance(getApplicationContext()).sendBroadcast(intent);
                             } else {
                                 Log.w(TAG, "Failed to get location.");
@@ -355,11 +509,13 @@ public class LocationService extends Service  {
         Log.i(TAG, "New location: " + location);
 
         mLocation = location;
-
+        trackpointDistance();
         // Notify anyone listening for broadcasts about the new location.
         Intent intent = new Intent(ACTION_BROADCAST);
         intent.putExtra(EXTRA_LOCATION, location);
-
+        intent.putExtra(EXTRA_DESTINATION,destination);
+        intent.putExtra(EXTRA_DISTANCE, checkpointDistance());
+        intent.putExtra(EXTRA_REACHED,artworkReached());
         LocalBroadcastManager.getInstance(getApplicationContext()).sendBroadcast(intent);
 
         // Update notification content if running as a foreground service.

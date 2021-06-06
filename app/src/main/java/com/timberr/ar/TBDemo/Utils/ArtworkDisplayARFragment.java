@@ -30,7 +30,7 @@ public class ArtworkDisplayARFragment extends ArFragment {
         FrameLayout frameLayout= (FrameLayout)  super.onCreateView(inflater, container, savedInstanceState);
         getPlaneDiscoveryController().hide();
         getArSceneView().getPlaneRenderer().setEnabled(false);
-//        getPlaneDiscoveryController().setInstructionView(null);
+        getPlaneDiscoveryController().setInstructionView(null);
         return frameLayout;
     }
 

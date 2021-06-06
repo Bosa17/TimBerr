@@ -8,17 +8,18 @@ import android.content.IntentFilter;
 import android.content.ServiceConnection;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
+import android.graphics.Color;
 import android.location.Location;
 import android.os.Handler;
+
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 
 import android.os.Bundle;
 import android.os.IBinder;
 import android.preference.PreferenceManager;
-import android.util.ArraySet;
 import android.util.Log;
-import android.view.Gravity;
 import android.view.View;
 import android.view.animation.Animation;
 import android.view.animation.RotateAnimation;
@@ -27,45 +28,32 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.google.android.filament.gltfio.Animator;
-import com.google.android.filament.gltfio.FilamentAsset;
-import com.google.ar.sceneform.Node;
-import com.google.ar.sceneform.SceneView;
-import com.google.ar.sceneform.math.Quaternion;
-import com.google.ar.sceneform.math.Vector3;
-import com.google.ar.sceneform.rendering.ModelRenderable;
+import com.google.android.gms.maps.CameraUpdateFactory;
+import com.google.android.gms.maps.GoogleMap;
+import com.google.android.gms.maps.OnMapReadyCallback;
+import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.model.BitmapDescriptorFactory;
+import com.google.android.gms.maps.model.GroundOverlay;
+import com.google.android.gms.maps.model.GroundOverlayOptions;
+import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.LatLngBounds;
+import com.timberr.ar.TBDemo.Utils.DataHelper;
 import com.timberr.ar.TBDemo.Utils.LocationService;
 import com.timberr.ar.TBDemo.Utils.LocationUtils;
 import com.timberr.ar.TBDemo.Utils.BearingProvider;
 import com.timberr.ar.TBDemo.Utils.PermissionHelper;
 
-import org.xmlpull.v1.XmlPullParserException;
+import static com.timberr.ar.TBDemo.Utils.LocationService.EXTRA_GPSFILE;
+import static com.timberr.ar.TBDemo.Utils.LocationService.EXTRA_REACHED;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.lang.ref.WeakReference;
-import java.util.List;
-import java.util.Set;
 
-import io.ticofab.androidgpxparser.parser.GPXParser;
-import io.ticofab.androidgpxparser.parser.domain.Gpx;
-import io.ticofab.androidgpxparser.parser.domain.Track;
-import io.ticofab.androidgpxparser.parser.domain.TrackPoint;
-import io.ticofab.androidgpxparser.parser.domain.TrackSegment;
-
-import static java.util.concurrent.TimeUnit.SECONDS;
-
-public class NavigationActivity extends AppCompatActivity implements BearingProvider.ChangeEventListener, SharedPreferences.OnSharedPreferenceChangeListener {
-    private static final String TAG= NavigationActivity.class.getSimpleName();
-    private Location target;
-    private int CheckpointIterator = 0;
+public class NavigationActivity extends AppCompatActivity implements BearingProvider.ChangeEventListener, OnMapReadyCallback {
+    private static final String TAG = NavigationActivity.class.getSimpleName();
+    //1-complete 2-west 3-east
+    public static final String ROUTE_MODE ="mode";
     private float currentDegree = 0f;
     private BearingProvider mBearingProvider;
-    private List<TrackPoint> trackpoints;
-    private List<TrackPoint> checkpoints;
-    private ModelRenderable renderable;
-    // Used in checking for runtime permissions.
-    private static final int REQUEST_PERMISSIONS_REQUEST_CODE = 34;
+    private DataHelper dataHelper;
 
     // The BroadcastReceiver used to listen from broadcasts from the service.
     private MyReceiver myReceiver;
@@ -75,14 +63,25 @@ public class NavigationActivity extends AppCompatActivity implements BearingProv
 
     // Tracks the bound state of the service.
     private boolean mBound = false;
+    //int to track the selected route
+    private int mode=1;
+    //Location of starting point
+    private  LatLng START_LOC = new LatLng(51.099528, 6.160169);
+    //Location of west map point
+    private  LatLng MAP_LOC_NE ;
+    //Location of west map point
+    private  LatLng MAP_LOC_SW ;
+    //padding for bounds
+    private  LatLng NEAR_NE ;
+    private  LatLng NEAR_SW ;
+    //drawable for selected route
+    private int route_overlay;
+    private GroundOverlay groundOverlay;
 
-
-    private ImageView calib;
     private ImageView nav_compass;
     private TextView distanceTextView;
     private Button back;
-    private SceneView sceneView;
-    private Button calib_complete;
+    private SupportMapFragment mapFragment;
 
     // Monitors the state of the connection to the service.
     private final ServiceConnection mServiceConnection = new ServiceConnection() {
@@ -101,30 +100,38 @@ public class NavigationActivity extends AppCompatActivity implements BearingProv
         }
     };
 
-    private static class AnimationInstance {
-        Animator animator;
-        Long startTime;
-        float duration;
-        int index;
-        AnimationInstance(Animator animator, int index, Long startTime) {
-            this.animator = animator;
-            this.startTime = startTime;
-            this.duration = animator.getAnimationDuration(index);
-            this.index = index;
-        }
-    }
-    private final Set<NavigationActivity.AnimationInstance> animators = new ArraySet<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_navigation);
-        nav_compass=findViewById(R.id.nav_compass);
-        distanceTextView =findViewById(R.id.distance);
-        calib=(ImageView) findViewById(R.id.calib);
-        calib_complete=findViewById(R.id.calib_btn);
-        sceneView=findViewById(R.id.nav_anim_view);
-        back=findViewById(R.id.back);
+        dataHelper=new DataHelper(this);
+        mode=dataHelper.getRouteMode();
+        if (mode==1){
+            MAP_LOC_NE = new LatLng(51.1430101, 6.3018778);
+            MAP_LOC_SW = new LatLng(51.0056267, 5.9585881);
+            route_overlay=R.drawable.overlay_complete;
+        }
+        else if (mode == 2){
+            MAP_LOC_NE = new LatLng(51.1390929, 6.1775385);
+            MAP_LOC_SW = new LatLng(51.0040943, 5.9606951);
+            route_overlay=R.drawable.overlay_west;
+        }
+        else{
+            MAP_LOC_NE = new LatLng(51.1305468, 6.2937138);
+            MAP_LOC_SW = new LatLng(51.0394039, 6.1280402);
+            route_overlay=R.drawable.overlay_east;
+        }
+        NEAR_NE =
+                new LatLng(MAP_LOC_NE.latitude + 0.111, MAP_LOC_NE.longitude + 0.111);
+        NEAR_SW =
+                new LatLng(MAP_LOC_SW.latitude - 0.111, MAP_LOC_SW.longitude - 0.111);
+        nav_compass = findViewById(R.id.nav_compass);
+        distanceTextView = findViewById(R.id.distance);
+        mapFragment = (SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.nav_view);
+        mapFragment.getMapAsync(this);
+        mapFragment.getView().setBackgroundColor(Color.parseColor("#ab6680"));
+        back = findViewById(R.id.back);
         back.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -132,123 +139,42 @@ public class NavigationActivity extends AppCompatActivity implements BearingProv
             }
         });
         myReceiver = new MyReceiver();
-//        GPXParser gpxParser=new GPXParser();
-//        Gpx parsedGpx = null;
-//        String gpxFile = getIntent().getStringExtra("gpxFile");
-//        try {
-//            InputStream in = getAssets().open(gpxFile);
-//            parsedGpx = gpxParser.parse(in);
-//        } catch (IOException | XmlPullParserException e) {
-//            // do something with this exception
-//            e.printStackTrace();
-//        }
-//        if (parsedGpx == null) {
-//            // error parsing track
-//            Log.d(TAG, "onCreate: nope");
-//        } else {
-//            // do something with the parsed track
-//            // see included example app and tests
-//            List<Track> tracks = parsedGpx.getTracks();
-//            for (int i = 0; i < tracks.size(); i++) {
-//                Track track = tracks.get(i);
-//                Log.d(TAG, "track " + i + ":");
-//                List<TrackSegment> segments = track.getTrackSegments();
-//                for (int j = 0; j < segments.size(); j++) {
-//                    TrackSegment segment = segments.get(j);
-//                    Log.d(TAG, "  segment " + j + ":");
-//                    trackpoints =segment.getTrackPoints();
-//                    for (TrackPoint trackPoint : segment.getTrackPoints()) {
-//                        if (trackPoint.getName()!=null)
-//                            checkpoints.add(trackPoint);
-//                        Log.d(TAG, "    point: lat " + trackPoint.getLatitude() + ", lon " + trackPoint.getLongitude()+" "+ trackPoint.getName());
-//                    }
-//                }
-//            }
-//        }
-//        target=new Location("B");
-//        target.setLatitude(trackpoints.get(CheckpointIterator).getLatitude());//50.768094  50.785750
-//        target.setLongitude(trackpoints.get(CheckpointIterator).getLongitude() );//6.090876  6.053170
         mBearingProvider = new BearingProvider(this);
         mBearingProvider.setChangeEventListener(this);
-        calib_complete.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                showNavigation();
-            }
-        });
-        WeakReference<NavigationActivity> weakActivity = new WeakReference<>(this);
-        // When you build a Renderable, Sceneform loads its resources in the background while returning
-        // a CompletableFuture. Call thenAccept(), handle(), or check isDone() before calling get().
-        ModelRenderable.builder()
-                .setSource(
-                        this,
-                        R.raw.animationroute)
-                .setIsFilamentGltf(true)
-                .build()
-                .thenAccept(
-                        modelRenderable -> {
-                            NavigationActivity activity = weakActivity.get();
-                            if (activity != null) {
-                                activity.renderable = modelRenderable;
-                                activity.placeRenderable();
-                            }
-                        })
-                .exceptionally(
-                        throwable -> {
-                            Toast toast =
-                                    Toast.makeText(this, "Unable to load renderable", Toast.LENGTH_LONG);
-                            toast.setGravity(Gravity.CENTER, 0, 0);
-                            toast.show();
-                            return null;
-                        });
 
     }
 
     @Override
     protected void onStart() {
         super.onStart();
-        PreferenceManager.getDefaultSharedPreferences(this)
-                .registerOnSharedPreferenceChangeListener(this);
-        if(!PermissionHelper.hasLocationPermission(this)){
+        if (!PermissionHelper.hasLocationPermission(this)) {
             PermissionHelper.requestLocationPermission(this);
         } else {
-            new Handler().postDelayed(new Runnable(){
+            new Handler().postDelayed(new Runnable() {
                 @Override
                 public void run() {
                     mService.requestLocationUpdates();
                 }
-            }, 1000);
+            }, 3000);
         }
-//        mBearingProvider.start(target);
-        bindService(new Intent(this, LocationService.class).putExtra("gpxFile",getIntent().getStringExtra("gpxFile")), mServiceConnection,
+
+        bindService(new Intent(this, LocationService.class), mServiceConnection,
                 Context.BIND_AUTO_CREATE);
     }
 
     @Override
-    protected void onResume()
-    {
+    protected void onResume() {
         super.onResume();
         mBearingProvider.resume();
-        try {
-            sceneView.resume();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
         LocalBroadcastManager.getInstance(this).registerReceiver(myReceiver,
                 new IntentFilter(LocationService.ACTION_BROADCAST));
     }
 
     @Override
-    protected void onPause()
-    {
+    protected void onPause() {
         LocalBroadcastManager.getInstance(this).unregisterReceiver(myReceiver);
         super.onPause();
         mBearingProvider.stop();
-        try {
-            sceneView.pause();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
     }
 
     @Override
@@ -260,16 +186,47 @@ public class NavigationActivity extends AppCompatActivity implements BearingProv
             unbindService(mServiceConnection);
             mBound = false;
         }
-        PreferenceManager.getDefaultSharedPreferences(this)
-                .unregisterOnSharedPreferenceChangeListener(this);
         super.onStop();
     }
 
 
     @Override
     public void onBackPressed() {
-        overridePendingTransition(R.anim.fadein, R.anim.fadeout);
         super.onBackPressed();
+        overridePendingTransition(R.anim.fadein, R.anim.fadeout);
+    }
+
+    @Override
+    public void onMapReady(@NonNull GoogleMap map) {
+        final LatLngBounds bounds= new LatLngBounds(MAP_LOC_SW,MAP_LOC_NE);
+        map.setMapType(GoogleMap.MAP_TYPE_NONE);
+        map.setMaxZoomPreference(14);
+        map.setMinZoomPreference(13);
+        map.getUiSettings().setRotateGesturesEnabled(false);
+        map.getUiSettings().setTiltGesturesEnabled(false);
+        map.getUiSettings().setCompassEnabled(false);
+        map.setLatLngBoundsForCameraTarget(bounds);
+        map.moveCamera(CameraUpdateFactory.newLatLngZoom(START_LOC, 14));
+        try {
+            map.setMyLocationEnabled(true);
+        }
+        catch (SecurityException e){}
+
+        // Add a large overlay for covering paddings.
+        groundOverlay = map.addGroundOverlay(new GroundOverlayOptions()
+                .image(BitmapDescriptorFactory.fromResource(R.drawable.map_bg))
+                .anchor(0, 1)
+                .positionFromBounds(new LatLngBounds(NEAR_SW,NEAR_NE)));
+
+        // Add the ground overlay
+        groundOverlay = map.addGroundOverlay(new GroundOverlayOptions()
+                .image(BitmapDescriptorFactory.fromResource(route_overlay))
+                .anchor(0, 1)
+                .positionFromBounds(bounds));
+
+        // Override the default content description on the view, for accessibility mode.
+        // Ideally this string would be localised.
+        map.setContentDescription("Google Map with SNA MAP");
     }
 
 
@@ -279,22 +236,21 @@ public class NavigationActivity extends AppCompatActivity implements BearingProv
     private class MyReceiver extends BroadcastReceiver {
         @Override
         public void onReceive(Context context, Intent intent) {
+            Location destination = intent.getParcelableExtra(LocationService.EXTRA_DESTINATION);
             Location location = intent.getParcelableExtra(LocationService.EXTRA_LOCATION);
+            float distance = intent.getFloatExtra(LocationService.EXTRA_DISTANCE,0.0f);
+            boolean reached = intent.getBooleanExtra(EXTRA_REACHED,false);
             if (location != null) {
-//                Toast.makeText(NavigationActivity.this, LocationUtils.getLocationText(location),
-//                        Toast.LENGTH_SHORT).show();
+                mBearingProvider.realign(destination);
                 mBearingProvider.onLocationChanged(location);
             }
+            onDistanceChanged(distance);
+            if (reached)
+                onLocationReached();
         }
     }
 
-    @Override
-    public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String s) {
-        // Update the buttons state depending on whether location updates are being requested.
-        if (s.equals(LocationUtils.KEY_REQUESTING_LOCATION_UPDATES)) {
 
-        }
-    }
     @Override
     public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
@@ -321,10 +277,10 @@ public class NavigationActivity extends AppCompatActivity implements BearingProv
 
     @Override
     public void onBearingChanged(double bearing) {
-//        // create a rotation animation (reverse turn degree degrees)
-
+        // create a rotation animation (reverse turn degree degrees)
         rotateArrow((float) bearing);
     }
+
     private void rotateArrow(float angle){
 
         RotateAnimation ra = new RotateAnimation(
@@ -345,15 +301,6 @@ public class NavigationActivity extends AppCompatActivity implements BearingProv
         currentDegree = -angle;
     }
 
-    private  void showNavigation(){
-        calib_complete.setVisibility(View.GONE);
-        calib.setVisibility(View.GONE);
-        distanceTextView.setVisibility(View.VISIBLE);
-        nav_compass.setVisibility(View.VISIBLE);
-        sceneView.setVisibility(View.VISIBLE);
-    }
-
-    @Override
     public void onLocationReached() {
         Toast.makeText(this, "You have reached!", Toast.LENGTH_SHORT).show();
         new Handler().postDelayed(new Runnable(){
@@ -367,41 +314,10 @@ public class NavigationActivity extends AppCompatActivity implements BearingProv
         }, 1000);
     }
 
-    @Override
-    public void onDistanceChanged(float distance) {
-        String d="Distance : "+ String.valueOf(distance)+ " m";
-        Log.d(TAG, "onDistanceChanged: "+d);
-        distanceTextView.setVisibility(View.VISIBLE);
-        distanceTextView.setText(d);
-    }
 
-    private void placeRenderable(){
-        if (renderable == null) {
-            return;
-        }
-        Log.d(TAG, "placeRenderable: "+renderable);
-        Node node= new Node();
-        node.setLocalScale(new Vector3(1.0f,1.0f,1.0f));
-        node.setLocalPosition(new Vector3(-0.06f,0.07f,-0.3f));
-        node.setLocalRotation(new Quaternion(new Vector3(1,0,0),90));
-        node.setRenderable(renderable);
-        sceneView.getScene().addChild(node);
-        FilamentAsset filamentAsset = node.getRenderableInstance().getFilamentAsset();
-        if (filamentAsset.getAnimator().getAnimationCount() > 0) {
-            animators.add(new NavigationActivity.AnimationInstance(filamentAsset.getAnimator(), 0, System.nanoTime()));
-        }
-        sceneView
-                .getScene()
-                .addOnUpdateListener(
-                        frameTime -> {
-                            Long time = System.nanoTime();
-                            for (NavigationActivity.AnimationInstance animator : animators) {
-                                animator.animator.applyAnimation(
-                                        animator.index,
-                                        (float) ((time - animator.startTime) / (double) SECONDS.toNanos(1))
-                                                % animator.duration);
-                                animator.animator.updateBoneMatrices();
-                            }
-                        });
+    public void onDistanceChanged(float distance) {
+        String d="Next Checkpoint : "+ String.valueOf(distance)+ " m";
+        Log.d(TAG, "onDistanceChanged: "+d);
+        distanceTextView.setText(d);
     }
 }

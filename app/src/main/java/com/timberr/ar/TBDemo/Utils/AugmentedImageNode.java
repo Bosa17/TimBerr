@@ -35,7 +35,7 @@ public class AugmentedImageNode extends AnchorNode {
             renderable = ModelRenderable.builder()
                     .setSource(
                             context,
-                            R.raw.millicharv2)
+                            R.raw.millcoh)
                     .setIsFilamentGltf(true)
                     .build();
 

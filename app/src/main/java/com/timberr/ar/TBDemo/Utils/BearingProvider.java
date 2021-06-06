@@ -26,8 +26,6 @@ public class BearingProvider implements SensorEventListener
          * @param bearing the new bearing value
          */
         void onBearingChanged(double bearing);
-        void onLocationReached();
-        void onDistanceChanged(float distance);
     }
 
     private final SensorManager mSensorManager;
@@ -146,10 +144,9 @@ public class BearingProvider implements SensorEventListener
     /**
      * Call this method to start bearing updates.
      */
-    public void start(Location loc)
+    public void realign(Location loc)
     {
         destination=loc;
-        calculcateDistance();
     }
 
     /**
@@ -230,8 +227,6 @@ public class BearingProvider implements SensorEventListener
         if (location!=null) {
             // set the new location
             this.mLocation = location;
-            //calculate the new distance
-            calculcateDistance();
             // update mBearing
             updateBearing();
         }
@@ -292,18 +287,4 @@ public class BearingProvider implements SensorEventListener
         return geomagneticField;
     }
 
-    private void calculcateDistance(){
-        float[] results = new float[1];
-        if(this.mLocation!=null) {
-            Location.distanceBetween(
-                    mLocation.getLatitude(), mLocation.getLongitude(),
-                    destination.getLatitude(), destination.getLongitude(), results);
-            Log.d(TAG, "calculcateDistance: "+results[0]);
-            if (results[0]<=20){
-                mChangeEventListener.onLocationReached();
-            }
-
-            mChangeEventListener.onDistanceChanged(results[0]);
-        }
-    }
 }

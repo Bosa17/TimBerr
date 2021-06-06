@@ -44,6 +44,9 @@
         android:usesCleartextTraffic="false"
         tools:ignore="GoogleAppIndexingWarning"
         tools:replace="android:allowBackup">
+        <meta-data
+            android:name="com.google.android.geo.API_KEY"
+            android:value="AIzaSyB1Adi3HYAltqV9hkoIKgLGXNclrZiaOCI" />
         <service
             android:name=".Utils.LocationService"
             android:enabled="true"
@@ -63,11 +66,16 @@
                 android:resource="@xml/paths" />
         </provider>
 
-        <activity android:name=".RouteSelectActivity" />
-        <activity android:name=".GuideCameraActivity" />
-        <activity android:name=".TutorialActivity" />
-        <activity android:name=".InfoActivity" />
-        <activity android:name=".NavigationActivity" />
+        <activity android:name=".RouteSelectActivity"
+            android:screenOrientation="locked" />
+        <activity android:name=".GuideCameraActivity"
+            android:screenOrientation="locked" />
+        <activity android:name=".TutorialActivity"
+            android:screenOrientation="locked"/>
+        <activity android:name=".InfoActivity"
+            android:screenOrientation="locked"/>
+        <activity android:name=".NavigationActivity"
+            android:screenOrientation="locked"/>
         <activity android:name=".LandingActivity" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -92,11 +100,6 @@
             android:label="@string/app_name"
             android:screenOrientation="locked"
             android:theme="@style/Theme.AppCompat.NoActionBar">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-
-                <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
         </activity>
     </application>
 
