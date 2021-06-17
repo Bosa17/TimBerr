@@ -28,9 +28,7 @@ public class ArtworkDisplayARFragment extends ArFragment {
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         FrameLayout frameLayout= (FrameLayout)  super.onCreateView(inflater, container, savedInstanceState);
-        getPlaneDiscoveryController().hide();
         getArSceneView().getPlaneRenderer().setEnabled(false);
-        getPlaneDiscoveryController().setInstructionView(null);
         return frameLayout;
     }
 

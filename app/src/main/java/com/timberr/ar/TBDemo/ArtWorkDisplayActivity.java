@@ -26,33 +26,24 @@ import android.util.Log;
 import android.view.Gravity;
 import android.view.MotionEvent;
 import android.view.View;
-import android.view.ViewGroup;
-import android.view.animation.Animation;
-import android.view.animation.RotateAnimation;
 import android.widget.Button;
 import android.widget.ImageView;
-import android.widget.RelativeLayout;
 import android.widget.Toast;
 
 import com.google.android.filament.gltfio.Animator;
 import com.google.android.filament.gltfio.FilamentAsset;
-import com.google.android.gms.maps.model.LatLng;
 import com.google.ar.core.Anchor;
-import com.google.ar.core.Frame;
 import com.google.ar.core.HitResult;
 import com.google.ar.core.Plane;
-import com.google.ar.core.Pose;
-import com.google.ar.core.TrackingState;
 import com.google.ar.core.exceptions.CameraNotAvailableException;
 import com.google.ar.sceneform.AnchorNode;
 import com.google.ar.sceneform.ArSceneView;
-import com.google.ar.sceneform.FrameTime;
-import com.google.ar.sceneform.Node;
-import com.google.ar.sceneform.Scene;
 import com.google.ar.sceneform.math.Vector3;
 import com.google.ar.sceneform.rendering.ModelRenderable;
 import com.google.ar.sceneform.rendering.Renderable;
-import com.google.ar.sceneform.ux.HandMotionView;
+import com.google.ar.sceneform.ux.TransformableNode;
+import com.iammert.library.cameravideobuttonlib.CameraVideoButton;
+import com.timberr.ar.TBDemo.Utils.CompassView;
 import com.timberr.ar.TBDemo.Utils.DataHelper;
 import com.timberr.ar.TBDemo.Utils.FrameSelector;
 import com.timberr.ar.TBDemo.Utils.BearingProvider;
@@ -65,14 +56,12 @@ import com.timberr.ar.TBDemo.Utils.ScreenUtil;
 import com.timberr.ar.TBDemo.Utils.VideoRecorder;
 
 import java.lang.ref.WeakReference;
-import java.util.Collection;
-import java.util.List;
 import java.util.Set;
 
 import static java.util.concurrent.TimeUnit.SECONDS;
 
 
-public class ArtWorkDisplayActivity extends AppCompatActivity implements BearingProvider.ChangeEventListener, Scene.OnUpdateListener, FileUtils.photoSavedListener, VideoRecorder.VideoSavedListener {
+public class ArtWorkDisplayActivity extends AppCompatActivity implements BearingProvider.ChangeEventListener, FileUtils.photoSavedListener, VideoRecorder.VideoSavedListener {
   private static final String TAG = ArtWorkDisplayActivity.class.getSimpleName();
   private static final double MIN_OPENGL_VERSION = 3.0;
   private DataHelper dataHelper;
@@ -87,11 +76,11 @@ public class ArtWorkDisplayActivity extends AppCompatActivity implements Bearing
   private int width;
   // The BroadcastReceiver used to listen from broadcasts from the service
   private MyReceiver myReceiver;
-  private ImageView nav_compass;
+  private CompassView nav_compass;
   private ImageView frame;
   private Button snap;
   private Button back;
-  private Button photo_btn;
+  private CameraVideoButton photo_btn;
   private ArtworkDisplayARFragment arFragment;
   private Renderable renderable;
 
@@ -143,7 +132,7 @@ public class ArtWorkDisplayActivity extends AppCompatActivity implements Bearing
       setContentView(R.layout.activity_ux);
       dataHelper=new DataHelper(this);
       arFragment = (ArtworkDisplayARFragment) getSupportFragmentManager().findFragmentById(R.id.artwork_fragment);
-      nav_compass=findViewById(R.id.nav_compass_art);
+      nav_compass= findViewById(R.id.nav_compass_artwork);
       frame=findViewById(R.id.frame);
       dataHelper.setFrame(FrameSelector.chooseFrame());
       frame.setBackgroundResource(dataHelper.getFrame());
@@ -184,6 +173,8 @@ public class ArtWorkDisplayActivity extends AppCompatActivity implements Bearing
               arAssetDrawable=R.raw.selfkant;
               break;
           case 7:
+//              target.setLatitude(50.785559);
+//              target.setLongitude(6.053371);
               target.setLatitude(51.06025);
               target.setLongitude(6.093267);
               arAssetDrawable=R.raw.heinsberg;
@@ -234,7 +225,6 @@ public class ArtWorkDisplayActivity extends AppCompatActivity implements Bearing
       videoRecorder.setVideoQuality(CamcorderProfile.QUALITY_HIGH, Configuration.ORIENTATION_PORTRAIT);
       videoRecorder.setVideoSavedListener(this);
       FileUtils.setPhotoSavedListener(this);
-      arFragment.getArSceneView().getScene().addOnUpdateListener(this);
       WeakReference<ArtWorkDisplayActivity> weakActivity = new WeakReference<>(this);
       // When you build a Renderable, Sceneform loads its resources in the background while returning
       // a CompletableFuture. Call thenAccept(), handle(), or check isDone() before calling get().
@@ -254,7 +244,7 @@ public class ArtWorkDisplayActivity extends AppCompatActivity implements Bearing
               .exceptionally(
                       throwable -> {
                           Toast toast =
-                                  Toast.makeText(this, "Unable to load renderable", Toast.LENGTH_LONG);
+                                  Toast.makeText(this, "Unable to load Artwork", Toast.LENGTH_LONG);
                           toast.setGravity(Gravity.CENTER, 0, 0);
                           toast.show();
                           return null;
@@ -273,10 +263,27 @@ public class ArtWorkDisplayActivity extends AppCompatActivity implements Bearing
               }
           }
       });
-      photo_btn.setOnClickListener(new View.OnClickListener() {
+      photo_btn.setVideoDuration(10000);
+      photo_btn.enableVideoRecording(true);
+      photo_btn.enablePhotoTaking(true);
+      photo_btn.setActionListener(new CameraVideoButton.ActionListener() {
           @Override
-          public void onClick(View view) {
-              //take photo
+          public void onStartRecord() {
+              toggleVideo();
+          }
+
+          @Override
+          public void onEndRecord() {
+                toggleVideo();
+          }
+
+          @Override
+          public void onDurationTooShortError() {
+
+          }
+
+          @Override
+          public void onSingleTap() {
               try {
                   takePhoto();
               } catch (Exception e) {
@@ -284,35 +291,56 @@ public class ArtWorkDisplayActivity extends AppCompatActivity implements Bearing
               }
           }
       });
-      photo_btn.setOnTouchListener(new View.OnTouchListener() {
-          @Override
-          public boolean onTouch(View view, MotionEvent motionEvent) {
-              switch (motionEvent.getAction()){
-                  case MotionEvent.ACTION_UP :
-                      if (videoRecorder.isRecording())
-                        toggleVideo();
-                      return false;
-              }
-              return false;
-          }
-      });
-      photo_btn.setOnLongClickListener(new View.OnLongClickListener() {
-          @Override
-          public boolean onLongClick(View view) {
-              try{
-                  toggleVideo();
-              } catch (Exception exception) {
-                  exception.printStackTrace();
-              }
-              return true;
-          }
-      });
+
       back.setOnClickListener(new View.OnClickListener() {
           @Override
           public void onClick(View view) {
               onBackPressed();
           }
       });
+      arFragment.setOnTapArPlaneListener(
+              (HitResult hitResult, Plane plane, MotionEvent motionEvent) -> {
+                  if (renderable == null | !isTargetReached |isRenderablePlaced) {
+                      return;
+                  }
+
+                  // Create the Anchor.
+                  Anchor anchor = hitResult.createAnchor();
+                  AnchorNode anchorNode = new AnchorNode(anchor);
+                  anchorNode.setParent(arFragment.getArSceneView().getScene());
+
+                  //Non-transformable renderable created
+                  TransformableNode tbArt = new TransformableNode(arFragment.getTransformationSystem());
+                  tbArt.setParent(anchorNode);
+                  tbArt.setRenderable(renderable);
+                  tbArt.getScaleController().setEnabled(false);
+                  tbArt.getTranslationController().setEnabled(false);
+                  tbArt.getRotationController().setEnabled(false);
+                  tbArt.select();
+                  tbArt.setLocalPosition(new Vector3(0f,0f,-1f));
+
+                  FilamentAsset filamentAsset = tbArt.getRenderableInstance().getFilamentAsset();
+                  if (filamentAsset.getAnimator().getAnimationCount() > 0) {
+                      animators.add(new AnimationInstance(filamentAsset.getAnimator(), 0, System.nanoTime()));
+                  }
+                  arFragment
+                          .getArSceneView()
+                          .getScene()
+                          .addOnUpdateListener(
+                                  frameTime -> {
+                                      Long time = System.nanoTime();
+                                      for (AnimationInstance animator : animators) {
+                                          animator.animator.applyAnimation(
+                                                  animator.index,
+                                                  (float) ((time - animator.startTime) / (double) SECONDS.toNanos(1))
+                                                          % animator.duration);
+                                          animator.animator.updateBoneMatrices();
+                                      }
+                                  });
+                  isRenderablePlaced=true;
+                  arFragment.getPlaneDiscoveryController().setInstructionView(null);
+                  arFragment.getArSceneView().getPlaneRenderer().setEnabled(false);
+              });
     }
 
     //take picture from the AR Scene View
@@ -348,7 +376,7 @@ public class ArtWorkDisplayActivity extends AppCompatActivity implements Bearing
         super.onResume();
         if(!PermissionHelper.hasLocationPermission(this)){
             PermissionHelper.requestLocationPermission(this);
-        }else if (!isPhotoVdoMode && !isTargetReached){
+        }else if (!isPhotoVdoMode | !isTargetReached){
             mBearingProvider.resume();
             mBearingProvider.realign(target);
         }
@@ -395,12 +423,13 @@ public class ArtWorkDisplayActivity extends AppCompatActivity implements Bearing
             if (location != null) {
                 Log.d(TAG, "onReceive: "+isTargetReached);
                 mBearingProvider.onLocationChanged(location);
-                if (location.distanceTo(target)<=20){
+                if (location.distanceTo(target)<=20 && !isRenderablePlaced){
                     isTargetReached=true;
                     mBearingProvider.stop();
                     nav_compass.clearAnimation();
                     nav_compass.setVisibility(View.GONE);
                     arFragment.getPlaneDiscoveryController().show();
+                    arFragment.getArSceneView().getPlaneRenderer().setEnabled(true);
                 }
             }
         }
@@ -420,98 +449,18 @@ public class ArtWorkDisplayActivity extends AppCompatActivity implements Bearing
         set.constrainWidth(R.id.rel_Camera_Preview, width);
         set.constrainHeight(R.id.rel_Camera_Preview, height);
         set.applyTo(parentLayout);
-        RelativeLayout.LayoutParams layoutParams = new RelativeLayout.LayoutParams(width, height);
-        layoutParams.addRule(RelativeLayout.CENTER_IN_PARENT, RelativeLayout.TRUE);
-        arFragment.getView().setLayoutParams(layoutParams);
+
+//        RelativeLayout.LayoutParams layoutParams = new RelativeLayout.LayoutParams(width, height);
+//        layoutParams.addRule(RelativeLayout.CENTER_IN_PARENT, RelativeLayout.TRUE);
+//        arFragment.getView().setLayoutParams(layoutParams);
     }
 
 
     @Override
     public void onBearingChanged(double bearing) {
       // create a rotation animation (reverse turn degree degrees)
-        rotateArrow((float) bearing);
+        nav_compass.rotationUpdate((float)-bearing,true);
     }
-
-    private void rotateArrow(float angle){
-
-        RotateAnimation ra = new RotateAnimation(
-                currentDegree,
-                -angle,
-                Animation.RELATIVE_TO_SELF, 0.5f,
-                Animation.RELATIVE_TO_SELF,
-                0.5f);
-
-        // how long the animation will take place
-        ra.setDuration(500);
-
-        // set the animation after the end of the reservation status
-        ra.setFillAfter(true);
-
-        // Start the animation
-        nav_compass.startAnimation(ra);
-        currentDegree = -angle;
-    }
-
-    @Override
-    public void onUpdate(FrameTime frameTime) {
-        if (isTargetReached) {
-            Frame frame = arFragment.getArSceneView().getArFrame();
-            assert frame != null;
-            Collection<Plane> planes = frame.getUpdatedTrackables(Plane.class);
-            for (Plane plane : planes) {
-                //check to see if plane is being tracked by ARCore
-                if (plane.getTrackingState() == TrackingState.TRACKING && !isRenderablePlaced) {
-                    List<HitResult> hitResults = frame.hitTest(screenCentre().x, screenCentre().y);
-                    for (HitResult hitResult : hitResults) {
-                        //create Anchor
-                        Anchor anchor = plane.createAnchor(hitResult.getHitPose());
-                        placeRenderable(anchor);
-                    }
-
-                }
-            }
-        }
-    }
-    private Vector3 screenCentre(){
-      return new Vector3(width/2.0f,height/2.0f,0f);
-    }
-    private void placeRenderable(Anchor anchor){
-      if (renderable == null) {
-          return;
-      }
-      AnchorNode anchorNode = new AnchorNode(anchor);
-      anchorNode.setParent(arFragment.getArSceneView().getScene());
-
-      //Non-transformable renderable created
-      Node tbArt= new Node();
-      tbArt.setWorldPosition(new Vector3(anchor.getPose().tx(),anchor.getPose().compose(Pose.makeTranslation(0f,0.05f,0f)).ty(),anchor.getPose().tz()));
-      tbArt.setRenderable(renderable);
-      tbArt.setParent(anchorNode);
-      FilamentAsset filamentAsset = tbArt.getRenderableInstance().getFilamentAsset();
-      if (filamentAsset.getAnimator().getAnimationCount() > 0) {
-          animators.add(new AnimationInstance(filamentAsset.getAnimator(), 0, System.nanoTime()));
-      }
-      arFragment
-                .getArSceneView()
-                .getScene()
-                .addOnUpdateListener(
-                        frameTime -> {
-                            Long time = System.nanoTime();
-                            for (AnimationInstance animator : animators) {
-                                animator.animator.applyAnimation(
-                                        animator.index,
-                                        (float) ((time - animator.startTime) / (double) SECONDS.toNanos(1))
-                                                % animator.duration);
-                                animator.animator.updateBoneMatrices();
-                            }
-                        });
-        renderablePlaced();
-    }
-    private void renderablePlaced(){
-      isRenderablePlaced=true;
-      renderable=null;
-    }
-
 
     /**
    * Returns false and displays an error message if Sceneform can not run, true if Sceneform can run

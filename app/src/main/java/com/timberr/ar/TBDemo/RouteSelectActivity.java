@@ -8,7 +8,6 @@ import android.widget.Button;
 
 import com.timberr.ar.TBDemo.Utils.DataHelper;
 
-import static com.timberr.ar.TBDemo.Utils.LocationService.EXTRA_GPSFILE;
 
 public class RouteSelectActivity extends AppCompatActivity {
     private Button back;

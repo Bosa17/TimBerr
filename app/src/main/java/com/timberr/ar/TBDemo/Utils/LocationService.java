@@ -338,7 +338,6 @@ public class LocationService extends Service  {
                 .setContentText(text)
                 .setOnlyAlertOnce(true)
                 .setContentTitle(title)
-                .setOngoing(true)
                 .setPriority(Notification.PRIORITY_HIGH)
                 .setSmallIcon(R.drawable.rabbit)
                 .setTicker(text)
@@ -460,7 +459,7 @@ public class LocationService extends Service  {
             float result= mLocation.distanceTo(tmp);
             Log.d(TAG, "checkpointDistance: "+checkIterator+" "+result);
             if (result<=50){
-                checkIterator=dataHelper.getArtworkReached()+1;
+                checkIterator=dataHelper.getArtworkReached();
             }
             return result;
         }

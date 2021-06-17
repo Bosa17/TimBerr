@@ -98,7 +98,7 @@ public class BearingProvider implements SensorEventListener
      * @param context Application Context
      */
     public BearingProvider(Context context) {
-        this(context, 7, 3, 700);
+        this(context, 5, 3, 500);
     }
 
     /**
@@ -270,7 +270,7 @@ public class BearingProvider implements SensorEventListener
         return degree;
     }
 
-        private double normalizeDegree(double value) {
+    private double normalizeDegree(double value) {
         if (value >= 0.0f && value <= 180.0f) {
             return value;
         } else {

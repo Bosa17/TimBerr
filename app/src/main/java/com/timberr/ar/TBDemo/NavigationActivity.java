@@ -6,7 +6,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.ServiceConnection;
-import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.location.Location;
@@ -37,6 +36,8 @@ import com.google.android.gms.maps.model.GroundOverlay;
 import com.google.android.gms.maps.model.GroundOverlayOptions;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.LatLngBounds;
+import com.google.android.gms.maps.model.MapStyleOptions;
+import com.timberr.ar.TBDemo.Utils.CompassView;
 import com.timberr.ar.TBDemo.Utils.DataHelper;
 import com.timberr.ar.TBDemo.Utils.LocationService;
 import com.timberr.ar.TBDemo.Utils.LocationUtils;
@@ -54,7 +55,7 @@ public class NavigationActivity extends AppCompatActivity implements BearingProv
     private float currentDegree = 0f;
     private BearingProvider mBearingProvider;
     private DataHelper dataHelper;
-
+    private boolean reached=false;
     // The BroadcastReceiver used to listen from broadcasts from the service.
     private MyReceiver myReceiver;
 
@@ -66,7 +67,7 @@ public class NavigationActivity extends AppCompatActivity implements BearingProv
     //int to track the selected route
     private int mode=1;
     //Location of starting point
-    private  LatLng START_LOC = new LatLng(51.099528, 6.160169);
+    private  LatLng START_LOC = new LatLng(51.099546, 6.160174);
     //Location of west map point
     private  LatLng MAP_LOC_NE ;
     //Location of west map point
@@ -78,7 +79,7 @@ public class NavigationActivity extends AppCompatActivity implements BearingProv
     private int route_overlay;
     private GroundOverlay groundOverlay;
 
-    private ImageView nav_compass;
+    private CompassView nav_compass;
     private TextView distanceTextView;
     private Button back;
     private SupportMapFragment mapFragment;
@@ -130,7 +131,6 @@ public class NavigationActivity extends AppCompatActivity implements BearingProv
         distanceTextView = findViewById(R.id.distance);
         mapFragment = (SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.nav_view);
         mapFragment.getMapAsync(this);
-        mapFragment.getView().setBackgroundColor(Color.parseColor("#ab6680"));
         back = findViewById(R.id.back);
         back.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -199,24 +199,18 @@ public class NavigationActivity extends AppCompatActivity implements BearingProv
     @Override
     public void onMapReady(@NonNull GoogleMap map) {
         final LatLngBounds bounds= new LatLngBounds(MAP_LOC_SW,MAP_LOC_NE);
-        map.setMapType(GoogleMap.MAP_TYPE_NONE);
-        map.setMaxZoomPreference(14);
-        map.setMinZoomPreference(13);
+        map.setMapStyle(MapStyleOptions.loadRawResourceStyle(this,R.raw.style));
+        map.setMaxZoomPreference(13);
+        map.setMinZoomPreference(12);
         map.getUiSettings().setRotateGesturesEnabled(false);
         map.getUiSettings().setTiltGesturesEnabled(false);
         map.getUiSettings().setCompassEnabled(false);
         map.setLatLngBoundsForCameraTarget(bounds);
-        map.moveCamera(CameraUpdateFactory.newLatLngZoom(START_LOC, 14));
+        map.moveCamera(CameraUpdateFactory.newLatLngZoom(START_LOC, 13));
         try {
             map.setMyLocationEnabled(true);
         }
         catch (SecurityException e){}
-
-        // Add a large overlay for covering paddings.
-        groundOverlay = map.addGroundOverlay(new GroundOverlayOptions()
-                .image(BitmapDescriptorFactory.fromResource(R.drawable.map_bg))
-                .anchor(0, 1)
-                .positionFromBounds(new LatLngBounds(NEAR_SW,NEAR_NE)));
 
         // Add the ground overlay
         groundOverlay = map.addGroundOverlay(new GroundOverlayOptions()
@@ -236,17 +230,19 @@ public class NavigationActivity extends AppCompatActivity implements BearingProv
     private class MyReceiver extends BroadcastReceiver {
         @Override
         public void onReceive(Context context, Intent intent) {
-            Location destination = intent.getParcelableExtra(LocationService.EXTRA_DESTINATION);
-            Location location = intent.getParcelableExtra(LocationService.EXTRA_LOCATION);
-            float distance = intent.getFloatExtra(LocationService.EXTRA_DISTANCE,0.0f);
-            boolean reached = intent.getBooleanExtra(EXTRA_REACHED,false);
-            if (location != null) {
-                mBearingProvider.realign(destination);
-                mBearingProvider.onLocationChanged(location);
+            if (!reached) {
+                Location destination = intent.getParcelableExtra(LocationService.EXTRA_DESTINATION);
+                Location location = intent.getParcelableExtra(LocationService.EXTRA_LOCATION);
+                float distance = intent.getFloatExtra(LocationService.EXTRA_DISTANCE, 0.0f);
+                reached = intent.getBooleanExtra(EXTRA_REACHED, false);
+                if (location != null) {
+                    mBearingProvider.realign(destination);
+                    mBearingProvider.onLocationChanged(location);
+                }
+                onDistanceChanged(distance);
+                if (reached)
+                    onLocationReached();
             }
-            onDistanceChanged(distance);
-            if (reached)
-                onLocationReached();
         }
     }
 
@@ -278,27 +274,7 @@ public class NavigationActivity extends AppCompatActivity implements BearingProv
     @Override
     public void onBearingChanged(double bearing) {
         // create a rotation animation (reverse turn degree degrees)
-        rotateArrow((float) bearing);
-    }
-
-    private void rotateArrow(float angle){
-
-        RotateAnimation ra = new RotateAnimation(
-                currentDegree,
-                -angle,
-                Animation.RELATIVE_TO_SELF, 0.5f,
-                Animation.RELATIVE_TO_SELF,
-                0.5f);
-
-        // how long the animation will take place
-        ra.setDuration(700);
-
-        // set the animation after the end of the reservation status
-        ra.setFillAfter(true);
-
-        // Start the animation
-        nav_compass.startAnimation(ra);
-        currentDegree = -angle;
+        nav_compass.rotationUpdate((float)-bearing,true);
     }
 
     public void onLocationReached() {
@@ -311,7 +287,7 @@ public class NavigationActivity extends AppCompatActivity implements BearingProv
                 NavigationActivity.this.startActivity(intent);
                 overridePendingTransition(R.anim.fadein, R.anim.hold);
             }
-        }, 1000);
+        }, 3000);
     }
 
 

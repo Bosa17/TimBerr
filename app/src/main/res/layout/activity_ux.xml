@@ -33,6 +33,7 @@
     <fragment
         android:id="@+id/artwork_fragment"
         android:name="com.timberr.ar.TBDemo.Utils.ArtworkDisplayARFragment"
+        android:keepScreenOn="true"
         android:layout_width="match_parent"
         android:layout_height="match_parent" />
 
@@ -55,8 +56,8 @@
       app:layout_constraintStart_toStartOf="parent"
       app:layout_constraintTop_toTopOf="parent" />
 
-  <ImageView
-      android:id="@+id/nav_compass_art"
+  <com.timberr.ar.TBDemo.Utils.CompassView
+      android:id="@+id/nav_compass_artwork"
       android:layout_width="118dp"
       android:layout_height="117dp"
       android:layout_marginStart="40dp"
@@ -75,12 +76,12 @@
       app:layout_constraintEnd_toEndOf="parent"
       app:layout_constraintTop_toTopOf="parent" />
 
-  <Button
+  <com.iammert.library.cameravideobuttonlib.CameraVideoButton
       android:id="@+id/photo_btn"
-      android:layout_width="wrap_content"
-      android:layout_height="wrap_content"
+      android:layout_width="120dp"
+      android:layout_height="120dp"
       android:layout_marginBottom="32dp"
-      android:text="Photo "
+      app:cvb_recording_color="#D438A2"
       android:visibility="invisible"
       app:layout_constraintBottom_toBottomOf="parent"
       app:layout_constraintEnd_toEndOf="parent"

@@ -434,36 +434,36 @@ public abstract class BaseArFragment extends Fragment
     TransformationSystem transformationSystem =
         new TransformationSystem(getResources().getDisplayMetrics(), selectionVisualizer);
 
-    setupSelectionRenderable(selectionVisualizer);
+//    setupSelectionRenderable(selectionVisualizer);
 
     return transformationSystem;
   }
 
   @SuppressWarnings({"AndroidApiChecker", "FutureReturnValueIgnored"})
   
-  protected void setupSelectionRenderable(FootprintSelectionVisualizer selectionVisualizer) {
-    ModelRenderable.builder()
-        .setSource(getActivity(), R.raw.sceneform_footprint)
-        .setIsFilamentGltf(true)
-        .build()
-        .thenAccept(
-            renderable -> {
-              // If the selection visualizer already has a footprint renderable, then it was set to
-              // something custom. Don't override the custom visual.
-              if (selectionVisualizer.getFootprintRenderable() == null) {
-                selectionVisualizer.setFootprintRenderable(renderable);
-              }
-            })
-        .exceptionally(
-            throwable -> {
-              Toast toast =
-                  Toast.makeText(
-                      getContext(), "Unable to load footprint renderable", Toast.LENGTH_LONG);
-              toast.setGravity(Gravity.CENTER, 0, 0);
-              toast.show();
-              return null;
-            });
-  }
+//  protected void setupSelectionRenderable(FootprintSelectionVisualizer selectionVisualizer) {
+//    ModelRenderable.builder()
+//        .setSource(getActivity(), R.raw.sceneform_footprint)
+//        .setIsFilamentGltf(true)
+//        .build()
+//        .thenAccept(
+//            renderable -> {
+//              // If the selection visualizer already has a footprint renderable, then it was set to
+//              // something custom. Don't override the custom visual.
+//              if (selectionVisualizer.getFootprintRenderable() == null) {
+//                selectionVisualizer.setFootprintRenderable(renderable);
+//              }
+//            })
+//        .exceptionally(
+//            throwable -> {
+//              Toast toast =
+//                  Toast.makeText(
+//                      getContext(), "Unable to load footprint renderable", Toast.LENGTH_LONG);
+//              toast.setGravity(Gravity.CENTER, 0, 0);
+//              toast.show();
+//              return null;
+//            });
+//  }
 
   protected abstract void handleSessionException(UnavailableException sessionException);
 
@@ -543,7 +543,7 @@ public abstract class BaseArFragment extends Fragment
         sessionInitializationFailed = true;
       }
       if (!sessionInitializationFailed) {
-        planeDiscoveryController.show();
+//        planeDiscoveryController.show();
       }
     }
   }
