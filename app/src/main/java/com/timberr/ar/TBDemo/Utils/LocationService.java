@@ -60,19 +60,16 @@ public class LocationService extends Service  {
     private static final String CHANNEL_ID = "channel_tb_bilderreise";
 
     public static final String ACTION_BROADCAST = PACKAGE_NAME + ".broadcast";
-    public static final String EXTRA_GPSFILE = PACKAGE_NAME + ".gpxfile";
     public static final String EXTRA_LOCATION = PACKAGE_NAME + ".location";
     private static final String EXTRA_STARTED_FROM_NOTIFICATION = PACKAGE_NAME + ".started_from_notification";
-    public static final String EXTRA_DISTANCE = PACKAGE_NAME + ".distance";
     public static final String EXTRA_REACHED = PACKAGE_NAME + ".reached";
-    public static final String EXTRA_DESTINATION = PACKAGE_NAME + ".destination";
 
     private final IBinder mBinder = new LocalBinder();
 
     /**
      * The desired interval for location updates. Inexact. Updates may be more or less frequent.
      */
-    private static final long UPDATE_INTERVAL_IN_MILLISECONDS = 7000;
+    private static final long UPDATE_INTERVAL_IN_MILLISECONDS = 10000;
 
     /**
      * The fastest rate for active location updates. Updates will never be more frequent
@@ -118,21 +115,8 @@ public class LocationService extends Service  {
     private Location mLocation;
 
     /**
-     * The current destination.
-     */
-    private Location destination;
-
-    /**
-     * The list to store trackpoints*/
-    private List<TrackPoint> trackpoints;
-
-    /**
      * The list to store checkpoints*/
     private List<TrackPoint> checkpoints;
-
-    /**
-     * The trackpoint Iterator*/
-    private int trackIterator=0;
 
     /**
      * The checkpoint Iterator*/
@@ -155,7 +139,6 @@ public class LocationService extends Service  {
         createLocationRequest();
         getLastLocation();
 
-        destination = new Location("destination");
 
         HandlerThread handlerThread = new HandlerThread(TAG);
         handlerThread.start();
@@ -201,13 +184,6 @@ public class LocationService extends Service  {
         // when that happens.
         Log.i(TAG, "in onBind()");
         try {
-            if (dataHelper.getRouteMode()==1)
-                gpxFile = "complete.gpx";
-            else if (dataHelper.getRouteMode()==2)
-                gpxFile = "west.gpx";
-            else
-                gpxFile = "east.gpx";
-            parseGPX();
             parseArtworkGPX();
         } catch (Exception e) {
             e.printStackTrace();
@@ -287,8 +263,8 @@ public class LocationService extends Service  {
     private Notification getNotification() {
         Intent intent = new Intent(this, LocationService.class);
 
-        CharSequence text = Float.toString(checkpointDistance())+" metres";
-
+        CharSequence text = "Click on Navigate to continue or Stop Route to stop.";
+        CharSequence title = "Continue the adventure?";
         // Extra to help us figure out if we arrived in onStartCommand via the notification or not.
         intent.putExtra(EXTRA_STARTED_FROM_NOTIFICATION, true);
 
@@ -307,7 +283,7 @@ public class LocationService extends Service  {
                         servicePendingIntent)
                 .setContentText(text)
                 .setOnlyAlertOnce(true)
-                .setContentTitle(LocationUtils.getLocationTitle(this))
+                .setContentTitle(title)
                 .setOngoing(true)
                 .setPriority(Notification.PRIORITY_HIGH)
                 .setSmallIcon(R.drawable.rabbit)
@@ -351,43 +327,6 @@ public class LocationService extends Service  {
         return builder.build();
     }
 
-    private void parseGPX(){
-        if (gpxFile!=null) {
-            GPXParser gpxParser = new GPXParser();
-            Gpx parsedGpx = null;
-            try {
-                InputStream in = getAssets().open(gpxFile);
-                parsedGpx = gpxParser.parse(in);
-            } catch (IOException | XmlPullParserException e) {
-                // do something with this exception
-                e.printStackTrace();
-            }
-            if (parsedGpx == null) {
-                // error parsing track
-                Log.d(TAG, "onCreate: nope");
-            } else {
-                // do something with the parsed track
-                // see included example app and tests
-                List<Track> tracks = parsedGpx.getTracks();
-                for (int i = 0; i < tracks.size(); i++) {
-                    Track track = tracks.get(i);
-                    Log.d(TAG, "track " + i + ":");
-                    List<TrackSegment> segments = track.getTrackSegments();
-                    for (int j = 0; j < segments.size(); j++) {
-                        TrackSegment segment = segments.get(j);
-                        Log.d(TAG, "  segment " + j + ":");
-                        trackpoints = segment.getTrackPoints();
-                        for (TrackPoint trackPoint : segment.getTrackPoints()) {
-                            Log.d(TAG, "    point: lat " + trackPoint.getLatitude() + ", lon " + trackPoint.getLongitude() + " " + trackPoint.getName());
-                        }
-                    }
-                }
-            }
-            destination.setLatitude(trackpoints.get(trackIterator).getLatitude());
-            destination.setLongitude(trackpoints.get(trackIterator).getLongitude());
-        }
-    }
-
     private void parseArtworkGPX(){
         GPXParser gpxParser = new GPXParser();
         checkpoints = new ArrayList<TrackPoint>();
@@ -413,16 +352,7 @@ public class LocationService extends Service  {
                 for (int j = 0; j < segments.size(); j++) {
                     TrackSegment segment = segments.get(j);
                     Log.d(TAG, "  segment " + j + ":");
-                    if (dataHelper.getRouteMode()==1) {
-
-                        checkpoints = segment.getTrackPoints();
-                    }
-                    else if (dataHelper.getRouteMode()==2) {
-                        checkpoints = segment.getTrackPoints().subList(0,7);
-                    }
-                    else {
-                        checkpoints = segment.getTrackPoints().subList(7,segment.getTrackPoints().size());
-                    }
+                    checkpoints = segment.getTrackPoints();
                     for (TrackPoint trackPoint :checkpoints) {
                         Log.d(TAG, "    point: lat " + trackPoint.getLatitude() + ", lon " + trackPoint.getLongitude() + " " + trackPoint.getName());
                     }
@@ -439,7 +369,7 @@ public class LocationService extends Service  {
                 tmp.setLongitude(loc.getLongitude());
                 float result = mLocation.distanceTo(tmp);
                 Log.d(TAG, "AllcheckpointDistance: "+result);
-                if (result <= 100) {
+                if (result <= 30) {
                     dataHelper.setArtworkReached(Integer.parseInt(loc.getName()));
                     if (serviceIsRunningInForeground(this)) {
                         mNotificationManager.notify(NOTIFICATION_ID+3, getArtworkReachedNotification());
@@ -449,37 +379,6 @@ public class LocationService extends Service  {
             }
         }
         return false;
-    }
-
-    private float checkpointDistance(){
-        if(this.mLocation!=null) {
-            Location tmp = new Location("tmp");
-            tmp.setLatitude(checkpoints.get(checkIterator).getLatitude());
-            tmp.setLongitude(checkpoints.get(checkIterator).getLongitude());
-            float result= mLocation.distanceTo(tmp);
-            Log.d(TAG, "checkpointDistance: "+checkIterator+" "+result);
-            if (result<=50){
-                checkIterator=dataHelper.getArtworkReached();
-            }
-            return result;
-        }
-        return 0.0f;
-    }
-
-    private void trackpointDistance(){
-        float[] results = new float[1];
-        if(this.mLocation!=null) {
-            Location.distanceBetween(
-                    mLocation.getLatitude(), mLocation.getLongitude(),
-                    destination.getLatitude(), destination.getLongitude(), results);
-            Log.d(TAG, "trackpointDistance: "+results[0]);
-            Log.d(TAG, "trackpointDistance: "+trackIterator+ " "+destination.getLongitude());
-            if (results[0]<=70){
-                trackIterator++;
-                destination.setLatitude(trackpoints.get(trackIterator).getLatitude());
-                destination.setLongitude(trackpoints.get(trackIterator).getLongitude());
-            }
-        }
     }
 
     private void getLastLocation() {
@@ -492,7 +391,6 @@ public class LocationService extends Service  {
                                 mLocation = task.getResult();
                                 Intent intent = new Intent(ACTION_BROADCAST);
                                 intent.putExtra(EXTRA_LOCATION, mLocation);
-                                intent.putExtra(EXTRA_DESTINATION,destination);
                                 LocalBroadcastManager.getInstance(getApplicationContext()).sendBroadcast(intent);
                             } else {
                                 Log.w(TAG, "Failed to get location.");
@@ -508,12 +406,9 @@ public class LocationService extends Service  {
         Log.i(TAG, "New location: " + location);
 
         mLocation = location;
-        trackpointDistance();
         // Notify anyone listening for broadcasts about the new location.
         Intent intent = new Intent(ACTION_BROADCAST);
         intent.putExtra(EXTRA_LOCATION, location);
-        intent.putExtra(EXTRA_DESTINATION,destination);
-        intent.putExtra(EXTRA_DISTANCE, checkpointDistance());
         intent.putExtra(EXTRA_REACHED,artworkReached());
         LocalBroadcastManager.getInstance(getApplicationContext()).sendBroadcast(intent);
 

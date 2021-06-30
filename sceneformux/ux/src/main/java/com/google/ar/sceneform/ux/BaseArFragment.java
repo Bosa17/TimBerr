@@ -543,7 +543,7 @@ public abstract class BaseArFragment extends Fragment
         sessionInitializationFailed = true;
       }
       if (!sessionInitializationFailed) {
-//        planeDiscoveryController.show();
+        planeDiscoveryController.show();
       }
     }
   }

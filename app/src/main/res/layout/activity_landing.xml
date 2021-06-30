@@ -7,24 +7,26 @@
     tools:context=".LandingActivity">
 
     <Button
-        android:id="@+id/button2"
-        android:layout_width="95dp"
-        android:layout_height="95dp"
+        android:id="@+id/info_btn"
+        android:layout_width="70dp"
+        android:layout_height="70dp"
         android:background="@drawable/infobutton"
         android:onClick="onInfoClicked"
+        app:layout_constraintBottom_toBottomOf="@+id/rabbit"
+        app:layout_constraintEnd_toEndOf="@+id/start_button" />
+
+    <ImageView
+        android:id="@+id/rotate_bg"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:background="@drawable/rotating_background"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="@+id/start_button"
-        app:layout_constraintTop_toBottomOf="@+id/start_button"
-        app:layout_constraintVertical_bias="0.7" />
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.0" />
 
     <ImageView
-        android:id="@+id/imageView3"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:background="@drawable/rotating_background" />
-
-    <ImageView
-        android:id="@+id/imageView2"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:background="@drawable/start_bg"
@@ -33,39 +35,39 @@
 
     <ImageView
         android:id="@+id/rabbit"
-        android:layout_width="224dp"
-        android:layout_height="322dp"
+        android:layout_width="145dp"
+        android:layout_height="220dp"
         android:background="@drawable/rabbit"
         android:elevation="7dp"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toStartOf="@+id/button2"
-        app:layout_constraintHorizontal_bias="0.2"
+        app:layout_constraintEnd_toStartOf="@+id/info_btn"
         app:layout_constraintStart_toStartOf="@+id/start_button"
         app:layout_constraintTop_toTopOf="@+id/start_button"
-        app:layout_constraintVertical_bias="0.85" />
+        app:layout_constraintVertical_bias="0.77" />
 
     <Button
         android:id="@+id/start_button"
-        android:layout_width="285dp"
-        android:layout_height="347dp"
+        android:layout_width="250dp"
+        android:layout_height="304dp"
         android:background="@drawable/start"
         android:visibility="visible"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toTopOf="@+id/rotate_bg"
+        app:layout_constraintVertical_bias="0.6" />
 
     <ImageView
         android:id="@+id/imageView"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginStart="32dp"
-        android:layout_marginEnd="32dp"
+        android:layout_marginStart="70dp"
+        android:layout_marginEnd="70dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.17000002"
+        app:layout_constraintVertical_bias="0.24000001"
         app:srcCompat="@drawable/ic_tb_bilderreise_logo" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

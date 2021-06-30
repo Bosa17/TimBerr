@@ -31,16 +31,5 @@ public class LocationUtils {
                 .apply();
     }
 
-    /**
-     * Returns the {@code location} object as a human readable string.
-     * @param location  The {@link Location}.
-     */
-    public static String getLocationText(Location location) {
-        return location == null ? "Unknown location" :
-                "(" + location.getLatitude() + ", " + location.getLongitude() + ")";
-    }
 
-    public static String getLocationTitle(Context context) {
-        return context.getString(R.string.distance_remaining);
-    }
 }

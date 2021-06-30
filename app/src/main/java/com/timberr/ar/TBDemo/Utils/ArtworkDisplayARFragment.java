@@ -11,6 +11,7 @@ import android.widget.FrameLayout;
 import com.google.ar.core.Config;
 import com.google.ar.core.Session;
 import com.google.ar.sceneform.ux.ArFragment;
+import com.google.ar.sceneform.ux.HandMotionView;
 
 public class ArtworkDisplayARFragment extends ArFragment {
 
@@ -28,7 +29,8 @@ public class ArtworkDisplayARFragment extends ArFragment {
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         FrameLayout frameLayout= (FrameLayout)  super.onCreateView(inflater, container, savedInstanceState);
-        getArSceneView().getPlaneRenderer().setEnabled(false);
+        getPlaneDiscoveryController().show();
+        getArSceneView().getPlaneRenderer().setEnabled(true);
         return frameLayout;
     }
 

@@ -1,30 +1,44 @@
 package com.timberr.ar.TBDemo;
 
 import android.content.Intent;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.graphics.Matrix;
 import android.graphics.drawable.AnimationDrawable;
 import android.os.Handler;
 import androidx.appcompat.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
+import android.view.animation.Animation;
+import android.view.animation.AnimationSet;
+import android.view.animation.AnimationUtils;
+import android.view.animation.DecelerateInterpolator;
+import android.view.animation.LinearInterpolator;
+import android.view.animation.RotateAnimation;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.Toast;
 
 import com.timberr.ar.TBDemo.Utils.AudioHelper;
 import com.timberr.ar.TBDemo.Utils.PermissionHelper;
+import com.timberr.ar.TBDemo.Utils.ScreenUtil;
 
 public class LandingActivity extends AppCompatActivity {
     private AnimationDrawable rabbitIdleAnimation;
     private AnimationDrawable rabbitCtaAnimation;
     private ImageView rabbit;
+    private ImageView rotate_bg;
     private AudioHelper audio;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_landing);
         Button startButton=findViewById(R.id.start_button);
+        startButton.setAnimation( AnimationUtils.loadAnimation(this, R.anim.bobbing));
         rabbit=findViewById(R.id.rabbit);
-
+        rotate_bg=findViewById(R.id.rotate_bg);
+        rotate_bg.getLayoutParams().width=(int)(ScreenUtil.getScreenHeight(this)*2);
+        rotate_bg.getLayoutParams().height=(int)(ScreenUtil.getScreenHeight(this)*2);
         audio =new AudioHelper(this);
         startButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -35,7 +49,6 @@ public class LandingActivity extends AppCompatActivity {
             }
         });
 
-
     }
 
     @Override
@@ -45,16 +58,24 @@ public class LandingActivity extends AppCompatActivity {
     }
     @Override
     protected void onResume() {
-        super.onResume();
-        audio.playMusic();
-        if (!PermissionHelper.hasPermission(this)) {
-            PermissionHelper.requestPermissions(this);
-        }
         if (rabbitCtaAnimation!=null)
             rabbitCtaAnimation.stop();
         if (rabbitIdleAnimation!=null)
             rabbitIdleAnimation.stop();
-
+        super.onResume();
+        RotateAnimation rotate = new RotateAnimation(
+                0, 359,
+                Animation.RELATIVE_TO_SELF, 0.5f,
+                Animation.RELATIVE_TO_SELF, 0.5f
+        );
+        rotate.setInterpolator(new LinearInterpolator());
+        rotate.setDuration(17000);
+        rotate.setRepeatCount(Animation.INFINITE);
+        rotate_bg.startAnimation(rotate);
+        audio.playMusic();
+        if (!PermissionHelper.hasPermission(this)) {
+            PermissionHelper.requestPermissions(this);
+        }
         /* New Handler to start the rabbit idle animation
          */
         new Handler().postDelayed(new Runnable(){
@@ -88,6 +109,10 @@ public class LandingActivity extends AppCompatActivity {
 
     @Override
     protected void onPause() {
+        if (rabbitCtaAnimation!=null)
+            rabbitCtaAnimation.stop();
+        if (rabbitIdleAnimation!=null)
+            rabbitIdleAnimation.stop();
         super.onPause();
         audio.stopPlaying();
     }

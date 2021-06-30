@@ -5,6 +5,7 @@ import android.os.Bundle;
 import android.util.ArraySet;
 import android.util.Log;
 import android.view.View;
+import android.widget.Button;
 import android.widget.ImageView;
 
 import com.google.android.filament.gltfio.Animator;
@@ -14,7 +15,6 @@ import com.google.ar.core.Frame;
 import com.google.ar.sceneform.FrameTime;
 import com.google.ar.sceneform.ux.ArFragment;
 import com.timberr.ar.TBDemo.Utils.AugmentedImageNode;
-import com.timberr.ar.TBDemo.Utils.SnackbarHelper;
 
 import java.util.Collection;
 import java.util.HashMap;
@@ -27,6 +27,8 @@ public class GuideCameraActivity extends AppCompatActivity {
 
     private ArFragment arFragment;
     private ImageView fitToScanView;
+    private Button back;
+
     private static class AnimationInstance {
         Animator animator;
         Long startTime;
@@ -52,7 +54,13 @@ public class GuideCameraActivity extends AppCompatActivity {
         arFragment = (ArFragment) getSupportFragmentManager().findFragmentById(R.id.augmented_image_fragment);
         fitToScanView = findViewById(R.id.image_view_fit_to_scan);
 
-
+        back=findViewById(R.id.back);
+        back.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                onBackPressed();
+            }
+        });
         arFragment.getArSceneView().getScene().addOnUpdateListener(this::onUpdateFrame);
     }
 
@@ -89,7 +97,7 @@ public class GuideCameraActivity extends AppCompatActivity {
         for (AugmentedImage augmentedImage : updatedAugmentedImages) {
             try {
                 FilamentAsset filamentAsset = augmentedImageMap.get(augmentedImage).getAsset();
-                Log.d("lol", "onUpdateFrame: "+filamentAsset);
+                Log.d("GuideCameraActivity", "onUpdateFrame: "+filamentAsset);
                 if (filamentAsset!=null && filamentAsset.getAnimator().getAnimationCount() > 0) {
                     animators.add(new AnimationInstance(filamentAsset.getAnimator(), 0, System.nanoTime()));
                 }
@@ -102,15 +110,13 @@ public class GuideCameraActivity extends AppCompatActivity {
                     animator.animator.updateBoneMatrices();
                 }
             }catch (Exception e){
-                Log.e("lol", "onUpdateFrame: Exception",e);
+                Log.e("GuideCameraActivity", "onUpdateFrame: Exception",e);
             }
             switch (augmentedImage.getTrackingState()) {
 
                 case PAUSED:
                     // When an image is in PAUSED state, but the camera is not PAUSED, it has been detected,
                     // but not yet tracked.
-                    String text = "Detected Image " + augmentedImage.getIndex();
-                    SnackbarHelper.getInstance().showMessage(this, text);
                     break;
 
                 case TRACKING:

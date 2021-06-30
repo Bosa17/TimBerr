@@ -41,7 +41,7 @@ public class AudioHelper {
         mPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
         try {
             mPlayer.setDataSource(mContext,
-                    Uri.parse("android.resource://" + mContext.getPackageName() + "/" + R.raw.sunny));
+                    Uri.parse("android.resource://" + mContext.getPackageName() + "/" + R.raw.start_music));
             mPlayer.prepare();
         } catch (IOException e) {
             Log.e(LOG_TAG, "Could not setup media player");

@@ -15,8 +15,6 @@ import android.os.Build;
 import android.os.Build.VERSION_CODES;
 import android.os.Bundle;
 import androidx.annotation.NonNull;
-import androidx.constraintlayout.widget.ConstraintLayout;
-import androidx.constraintlayout.widget.ConstraintSet;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 
@@ -38,15 +36,11 @@ import com.google.ar.core.Plane;
 import com.google.ar.core.exceptions.CameraNotAvailableException;
 import com.google.ar.sceneform.AnchorNode;
 import com.google.ar.sceneform.ArSceneView;
-import com.google.ar.sceneform.math.Vector3;
 import com.google.ar.sceneform.rendering.ModelRenderable;
 import com.google.ar.sceneform.rendering.Renderable;
 import com.google.ar.sceneform.ux.TransformableNode;
 import com.iammert.library.cameravideobuttonlib.CameraVideoButton;
-import com.timberr.ar.TBDemo.Utils.CompassView;
 import com.timberr.ar.TBDemo.Utils.DataHelper;
-import com.timberr.ar.TBDemo.Utils.FrameSelector;
-import com.timberr.ar.TBDemo.Utils.BearingProvider;
 import com.timberr.ar.TBDemo.Utils.ArtworkDisplayARFragment;
 import com.timberr.ar.TBDemo.Utils.FileUtils;
 import com.timberr.ar.TBDemo.Utils.LocationService;
@@ -61,23 +55,19 @@ import java.util.Set;
 import static java.util.concurrent.TimeUnit.SECONDS;
 
 
-public class ArtWorkDisplayActivity extends AppCompatActivity implements BearingProvider.ChangeEventListener, FileUtils.photoSavedListener, VideoRecorder.VideoSavedListener {
+public class ArtWorkDisplayActivity extends AppCompatActivity implements FileUtils.photoSavedListener, VideoRecorder.VideoSavedListener {
   private static final String TAG = ArtWorkDisplayActivity.class.getSimpleName();
   private static final double MIN_OPENGL_VERSION = 3.0;
   private DataHelper dataHelper;
   private Location target;
-  private float currentDegree = 0f;
-  private BearingProvider mBearingProvider;
   private boolean isRenderablePlaced;
   private boolean isPhotoVdoMode;
-    private boolean isTargetReached;
+  private boolean isOutsideRadius;
   private VideoRecorder videoRecorder;
   private int height;
   private int width;
   // The BroadcastReceiver used to listen from broadcasts from the service
   private MyReceiver myReceiver;
-  private CompassView nav_compass;
-  private ImageView frame;
   private Button snap;
   private Button back;
   private CameraVideoButton photo_btn;
@@ -132,10 +122,6 @@ public class ArtWorkDisplayActivity extends AppCompatActivity implements Bearing
       setContentView(R.layout.activity_ux);
       dataHelper=new DataHelper(this);
       arFragment = (ArtworkDisplayARFragment) getSupportFragmentManager().findFragmentById(R.id.artwork_fragment);
-      nav_compass= findViewById(R.id.nav_compass_artwork);
-      frame=findViewById(R.id.frame);
-      dataHelper.setFrame(FrameSelector.chooseFrame());
-      frame.setBackgroundResource(dataHelper.getFrame());
       snap=findViewById(R.id.snap);
       back=findViewById(R.id.back);
       photo_btn=findViewById(R.id.photo_btn);
@@ -155,7 +141,7 @@ public class ArtWorkDisplayActivity extends AppCompatActivity implements Bearing
           case 3:
               target.setLatitude(51.131239);
               target.setLongitude(6.089418);
-              arAssetDrawable=R.raw.effeld2;
+              arAssetDrawable=R.raw.effeld;
               break;
           case 4:
               target.setLatitude(51.072432);
@@ -165,7 +151,7 @@ public class ArtWorkDisplayActivity extends AppCompatActivity implements Bearing
           case 5:
               target.setLatitude(51.031573);
               target.setLongitude(5.985918);
-              arAssetDrawable=R.raw.brebern2;
+              arAssetDrawable=R.raw.brebern;
               break;
           case 6:
               target.setLatitude(51.013813);
@@ -173,8 +159,6 @@ public class ArtWorkDisplayActivity extends AppCompatActivity implements Bearing
               arAssetDrawable=R.raw.selfkant;
               break;
           case 7:
-//              target.setLatitude(50.785559);
-//              target.setLongitude(6.053371);
               target.setLatitude(51.06025);
               target.setLongitude(6.093267);
               arAssetDrawable=R.raw.heinsberg;
@@ -192,7 +176,7 @@ public class ArtWorkDisplayActivity extends AppCompatActivity implements Bearing
           case 10:
               target.setLatitude(51.056557);
               target.setLongitude(6.208612);
-              arAssetDrawable=R.raw.millich2;
+              arAssetDrawable=R.raw.millich;
               break;
           case 11:
               target.setLatitude(51.068524);
@@ -214,12 +198,47 @@ public class ArtWorkDisplayActivity extends AppCompatActivity implements Bearing
               target.setLongitude(6.177899);
               arAssetDrawable=R.raw.trauerweider;
               break;
+          case 21:
+//              target.setLatitude(50.785559);
+//              target.setLongitude(6.053371);
+              target.setLatitude(51.103102);
+              target.setLongitude(6.052899);
+              arAssetDrawable=R.raw.blume;
+              break;
+          case 22:
+              target.setLatitude(51.051113);
+              target.setLongitude(5.866353);
+              arAssetDrawable=R.raw.pass;
+              break;
+          case 23:
+              target.setLatitude(51.118383);
+              target.setLongitude(6.192719);
+              arAssetDrawable=R.raw.insektenhotel;
+              break;
+          case 24:
+              target.setLatitude(51.106498);
+              target.setLongitude(6.177899);
+              arAssetDrawable=R.raw.hase;
+              break;
+          case 25:
+              target.setLatitude(50.776399);
+              target.setLongitude(6.083909);
+              arAssetDrawable=R.raw.hase;
+              break;
+          case 26:
+              target.setLatitude(50.963899);
+              target.setLongitude(6.121553);
+              arAssetDrawable=R.raw.hase;
+              break;
+          case 27:
+              target.setLatitude(50.919995);
+              target.setLongitude(6.120102);
+              arAssetDrawable=R.raw.hase;
+              break;
 
       }
-      isTargetReached=false;
+      isOutsideRadius =false;
       myReceiver = new MyReceiver();
-      mBearingProvider = new BearingProvider(this);
-      mBearingProvider.setChangeEventListener(this);
       videoRecorder=new VideoRecorder(this);
       videoRecorder.setSceneView(arFragment.getArSceneView());
       videoRecorder.setVideoQuality(CamcorderProfile.QUALITY_HIGH, Configuration.ORIENTATION_PORTRAIT);
@@ -298,9 +317,11 @@ public class ArtWorkDisplayActivity extends AppCompatActivity implements Bearing
               onBackPressed();
           }
       });
+      arFragment.getPlaneDiscoveryController().show();
+      arFragment.getArSceneView().getPlaneRenderer().setEnabled(true);
       arFragment.setOnTapArPlaneListener(
               (HitResult hitResult, Plane plane, MotionEvent motionEvent) -> {
-                  if (renderable == null | !isTargetReached |isRenderablePlaced) {
+                  if (renderable == null | isOutsideRadius | isRenderablePlaced | isPhotoVdoMode) {
                       return;
                   }
 
@@ -317,7 +338,6 @@ public class ArtWorkDisplayActivity extends AppCompatActivity implements Bearing
                   tbArt.getTranslationController().setEnabled(false);
                   tbArt.getRotationController().setEnabled(false);
                   tbArt.select();
-                  tbArt.setLocalPosition(new Vector3(0f,0f,-1f));
 
                   FilamentAsset filamentAsset = tbArt.getRenderableInstance().getFilamentAsset();
                   if (filamentAsset.getAnimator().getAnimationCount() > 0) {
@@ -337,16 +357,17 @@ public class ArtWorkDisplayActivity extends AppCompatActivity implements Bearing
                                           animator.animator.updateBoneMatrices();
                                       }
                                   });
-                  isRenderablePlaced=true;
+                  arFragment.getPlaneDiscoveryController().hide();
                   arFragment.getPlaneDiscoveryController().setInstructionView(null);
                   arFragment.getArSceneView().getPlaneRenderer().setEnabled(false);
+                  isRenderablePlaced=true;
               });
     }
 
     //take picture from the AR Scene View
     private void takePhoto() {
         ArSceneView view = arFragment.getArSceneView();
-        PhotoHelper.takePhoto(this,view,dataHelper.getFrame());
+        PhotoHelper.takePhoto(this,view);
     }
 
     //function to take vdo
@@ -359,7 +380,7 @@ public class ArtWorkDisplayActivity extends AppCompatActivity implements Bearing
         if (!isPhotoVdoMode)
             super.onBackPressed();
         else
-            recreate();
+            revert();
     }
 
     @Override
@@ -376,9 +397,6 @@ public class ArtWorkDisplayActivity extends AppCompatActivity implements Bearing
         super.onResume();
         if(!PermissionHelper.hasLocationPermission(this)){
             PermissionHelper.requestLocationPermission(this);
-        }else if (!isPhotoVdoMode | !isTargetReached){
-            mBearingProvider.resume();
-            mBearingProvider.realign(target);
         }
         arFragment.onResume();
         try {
@@ -397,20 +415,23 @@ public class ArtWorkDisplayActivity extends AppCompatActivity implements Bearing
         super.onPause();
         if (videoRecorder.isRecording())
             toggleVideo();
-        mBearingProvider.stop();
         arFragment.getArSceneView().pause();
         arFragment.onPause();
     }
 
     private void startPhotoMode(){
         isPhotoVdoMode=true;
-        setCameraPreview_Frame();
-        mBearingProvider.stop();
-        nav_compass.clearAnimation();
-        nav_compass.setVisibility(View.GONE);
+        arFragment.getPlaneDiscoveryController().hide();
+        arFragment.getPlaneDiscoveryController().setInstructionView(null);
+        arFragment.getArSceneView().getPlaneRenderer().setEnabled(false);
         snap.setVisibility(View.GONE);
         photo_btn.setVisibility(View.VISIBLE);
-        frame.setVisibility(View.VISIBLE);
+    }
+
+    private void revert(){
+        isPhotoVdoMode=false;
+        snap.setVisibility(View.VISIBLE);
+        photo_btn.setVisibility(View.GONE);
     }
 
     /**
@@ -421,45 +442,13 @@ public class ArtWorkDisplayActivity extends AppCompatActivity implements Bearing
         public void onReceive(Context context, Intent intent) {
             Location location = intent.getParcelableExtra(LocationService.EXTRA_LOCATION);
             if (location != null) {
-                Log.d(TAG, "onReceive: "+isTargetReached);
-                mBearingProvider.onLocationChanged(location);
-                if (location.distanceTo(target)<=20 && !isRenderablePlaced){
-                    isTargetReached=true;
-                    mBearingProvider.stop();
-                    nav_compass.clearAnimation();
-                    nav_compass.setVisibility(View.GONE);
-                    arFragment.getPlaneDiscoveryController().show();
-                    arFragment.getArSceneView().getPlaneRenderer().setEnabled(true);
+                if (location.distanceTo(target)>=30 && !isRenderablePlaced){
+                    isOutsideRadius =true;
+                    Toast.makeText(getApplicationContext(),"Moved out of radius!",Toast.LENGTH_LONG).show();
+                    finish();
                 }
             }
         }
-    }
-    //change to photo-mode view
-    private void setCameraPreview_Frame()
-    {
-        if(width<height)
-            height = width;
-        else
-            width = height;
-        ConstraintLayout parentLayout = (ConstraintLayout)findViewById(R.id.parent_layout);
-        ConstraintSet set = new ConstraintSet();
-
-        set.clone(parentLayout);
-        // connect start and end point of views, in this case top of child to top of parent.
-        set.constrainWidth(R.id.rel_Camera_Preview, width);
-        set.constrainHeight(R.id.rel_Camera_Preview, height);
-        set.applyTo(parentLayout);
-
-//        RelativeLayout.LayoutParams layoutParams = new RelativeLayout.LayoutParams(width, height);
-//        layoutParams.addRule(RelativeLayout.CENTER_IN_PARENT, RelativeLayout.TRUE);
-//        arFragment.getView().setLayoutParams(layoutParams);
-    }
-
-
-    @Override
-    public void onBearingChanged(double bearing) {
-      // create a rotation animation (reverse turn degree degrees)
-        nav_compass.rotationUpdate((float)-bearing,true);
     }
 
     /**

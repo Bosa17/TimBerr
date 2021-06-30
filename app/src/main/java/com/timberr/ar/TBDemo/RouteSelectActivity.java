@@ -39,22 +39,23 @@ public class RouteSelectActivity extends AppCompatActivity {
 
     public void route1Selected(View view) {
         Intent intent=new Intent(RouteSelectActivity.this,NavigationActivity.class);
-        dataHelper.setRouteMode(1);
+        dataHelper.setRouteMode(2);
         startActivity(intent);
         overridePendingTransition(R.anim.fadein, R.anim.hold);
     }
 
     public void route2Selected(View view) {
         Intent intent=new Intent(RouteSelectActivity.this,NavigationActivity.class);
-        dataHelper.setRouteMode(2);
+        dataHelper.setRouteMode(3);
         startActivity(intent);
         overridePendingTransition(R.anim.fadein, R.anim.hold);
     }
 
     public void route3Selected(View view) {
         Intent intent=new Intent(RouteSelectActivity.this,NavigationActivity.class);
-        dataHelper.setRouteMode(3);
+        dataHelper.setRouteMode(1);
         startActivity(intent);
         overridePendingTransition(R.anim.fadein, R.anim.hold);
     }
+
 }
