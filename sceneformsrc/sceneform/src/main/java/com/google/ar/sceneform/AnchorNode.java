@@ -57,7 +57,7 @@ public class AnchorNode extends Node {
     // Make sure children are enabled based on the initial state of the anchor.
     // This is particularly important for Hosted Anchors, which aren't tracking when created.
     wasTracking = isTracking();
-    setChildrenEnabled(wasTracking || anchor == null);
+//    setChildrenEnabled(wasTracking || anchor == null);
   }
 
   /** Returns the ARCore anchor if it exists or null otherwise. */
@@ -170,11 +170,11 @@ public class AnchorNode extends Node {
     boolean isTracking = isTracking();
 
     // Hide the children if the anchor isn't currently tracking.
-    if (isTracking != wasTracking) {
-      // The children should be enabled if there is no anchor, even though we aren't tracking in
-      // that case.
-      setChildrenEnabled(isTracking || anchor == null);
-    }
+//    if (isTracking != wasTracking) {
+//      // The children should be enabled if there is no anchor, even though we aren't tracking in
+//      // that case.
+//      setChildrenEnabled(isTracking || anchor == null);
+//    }
 
     // isTracking already checks if the anchor is null, but we need the anchor null check for
     // static analysis.
@@ -203,11 +203,11 @@ public class AnchorNode extends Node {
     wasTracking = isTracking;
   }
 
-  private void setChildrenEnabled(boolean enabled) {
-    List<Node> children = getChildren();
-    for (int i = 0; i < children.size(); i++) {
-      Node child = children.get(i);
-      child.setEnabled(enabled);
-    }
-  }
+//  private void setChildrenEnabled(boolean enabled) {
+//    List<Node> children = getChildren();
+//    for (int i = 0; i < children.size(); i++) {
+//      Node child = children.get(i);
+//      child.setEnabled(enabled);
+//    }
+//  }
 }

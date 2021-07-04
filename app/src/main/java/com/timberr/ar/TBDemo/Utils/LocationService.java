@@ -29,6 +29,7 @@ import com.google.android.gms.location.LocationResult;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
+import com.timberr.ar.TBDemo.ArtWorkDisplayActivity;
 import com.timberr.ar.TBDemo.NavigationActivity;
 import com.timberr.ar.TBDemo.R;
 
@@ -36,6 +37,7 @@ import org.xmlpull.v1.XmlPullParserException;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.List;
 
 import io.ticofab.androidgpxparser.parser.GPXParser;
@@ -46,11 +48,11 @@ import io.ticofab.androidgpxparser.parser.domain.TrackSegment;
 
 public class LocationService extends Service  {
 
-    private BearingProvider mBearingProvider;
-
     private static final String PACKAGE_NAME =
             "com.timberr.ar.TBDemo";
     private static final String TAG = LocationService.class.getSimpleName();
+
+    private DataHelper dataHelper;
 
     /**
      * The name of the channel for notifications.
@@ -58,10 +60,9 @@ public class LocationService extends Service  {
     private static final String CHANNEL_ID = "channel_tb_bilderreise";
 
     public static final String ACTION_BROADCAST = PACKAGE_NAME + ".broadcast";
-
     public static final String EXTRA_LOCATION = PACKAGE_NAME + ".location";
-    private static final String EXTRA_STARTED_FROM_NOTIFICATION = PACKAGE_NAME +
-            ".started_from_notification";
+    private static final String EXTRA_STARTED_FROM_NOTIFICATION = PACKAGE_NAME + ".started_from_notification";
+    public static final String EXTRA_REACHED = PACKAGE_NAME + ".reached";
 
     private final IBinder mBinder = new LocalBinder();
 
@@ -80,7 +81,7 @@ public class LocationService extends Service  {
     /**
      * The identifier for the notification displayed for the foreground service.
      */
-    private static final int NOTIFICATION_ID = 12345678;
+    private static final int NOTIFICATION_ID = 30035;
 
     /**
      * Used to check whether the bound activity has really gone away and not unbound as part of an
@@ -113,8 +114,13 @@ public class LocationService extends Service  {
      */
     private Location mLocation;
 
-    private List<TrackPoint> trackpoints;
+    /**
+     * The list to store checkpoints*/
     private List<TrackPoint> checkpoints;
+
+    /**
+     * The checkpoint Iterator*/
+    private int checkIterator=0;
 
     private String gpxFile ;
 
@@ -129,10 +135,10 @@ public class LocationService extends Service  {
                 onNewLocation(locationResult.getLastLocation());
             }
         };
-
-//        parseGPX();
+        dataHelper=new DataHelper(this);
         createLocationRequest();
         getLastLocation();
+
 
         HandlerThread handlerThread = new HandlerThread(TAG);
         handlerThread.start();
@@ -161,13 +167,6 @@ public class LocationService extends Service  {
             removeLocationUpdates();
             stopSelf();
         }
-        else {
-            try {
-                gpxFile = intent.getStringExtra("gpxFile");
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        }
         // Tells the system to not try to recreate the service after it has been killed.
         return START_NOT_STICKY;
     }
@@ -184,6 +183,11 @@ public class LocationService extends Service  {
         // and binds with this service. The service should cease to be a foreground service
         // when that happens.
         Log.i(TAG, "in onBind()");
+        try {
+            parseArtworkGPX();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
         stopForeground(true);
         mChangingConfiguration = false;
         return mBinder;
@@ -259,8 +263,8 @@ public class LocationService extends Service  {
     private Notification getNotification() {
         Intent intent = new Intent(this, LocationService.class);
 
-        CharSequence text = LocationUtils.getLocationText(mLocation);
-
+        CharSequence text = "Click on Navigate to continue or Stop Route to stop.";
+        CharSequence title = "Continue the adventure?";
         // Extra to help us figure out if we arrived in onStartCommand via the notification or not.
         intent.putExtra(EXTRA_STARTED_FROM_NOTIFICATION, true);
 
@@ -273,13 +277,13 @@ public class LocationService extends Service  {
                 new Intent(this, NavigationActivity.class), 0);
 
         NotificationCompat.Builder builder = new NotificationCompat.Builder(this)
-                .addAction(R.drawable.ic_launcher, "Launch activity",
+                .addAction(R.drawable.ic_launcher, "Navigate",
                         activityPendingIntent)
                 .addAction(R.drawable.ic_cancel, "Stop Route",
                         servicePendingIntent)
                 .setContentText(text)
                 .setOnlyAlertOnce(true)
-                .setContentTitle(LocationUtils.getLocationTitle(this))
+                .setContentTitle(title)
                 .setOngoing(true)
                 .setPriority(Notification.PRIORITY_HIGH)
                 .setSmallIcon(R.drawable.rabbit)
@@ -294,11 +298,41 @@ public class LocationService extends Service  {
         return builder.build();
     }
 
-    private void parseGPX(){
-        GPXParser gpxParser=new GPXParser();
+    /**
+     * Returns the {@link NotificationCompat} used as part of the foreground service.
+     */
+    private Notification getArtworkReachedNotification() {
+
+        CharSequence text = "You are near an artwork, click here to open it!";
+        CharSequence title = "Artwork Nearby!";
+        // The PendingIntent to launch activity.
+        PendingIntent activityPendingIntent = PendingIntent.getActivity(this, 0,
+                new Intent(this, ArtWorkDisplayActivity.class), 0);
+
+        NotificationCompat.Builder builder = new NotificationCompat.Builder(this)
+                .setContentIntent(activityPendingIntent)
+                .setContentText(text)
+                .setOnlyAlertOnce(true)
+                .setContentTitle(title)
+                .setPriority(Notification.PRIORITY_HIGH)
+                .setSmallIcon(R.drawable.rabbit)
+                .setTicker(text)
+                .setWhen(System.currentTimeMillis());
+
+        // Set the Channel ID for Android O.
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            builder.setChannelId(CHANNEL_ID); // Channel ID
+        }
+
+        return builder.build();
+    }
+
+    private void parseArtworkGPX(){
+        GPXParser gpxParser = new GPXParser();
+        checkpoints = new ArrayList<TrackPoint>();
         Gpx parsedGpx = null;
         try {
-            InputStream in = getAssets().open(gpxFile);
+            InputStream in = getAssets().open("artwork.gpx");
             parsedGpx = gpxParser.parse(in);
         } catch (IOException | XmlPullParserException e) {
             // do something with this exception
@@ -318,17 +352,35 @@ public class LocationService extends Service  {
                 for (int j = 0; j < segments.size(); j++) {
                     TrackSegment segment = segments.get(j);
                     Log.d(TAG, "  segment " + j + ":");
-                    trackpoints =segment.getTrackPoints();
-                    for (TrackPoint trackPoint : segment.getTrackPoints()) {
-                        if (trackPoint.getName()!=null)
-                            checkpoints.add(trackPoint);
-                        Log.d(TAG, "    point: lat " + trackPoint.getLatitude() + ", lon " + trackPoint.getLongitude()+" "+ trackPoint.getName());
+                    checkpoints = segment.getTrackPoints();
+                    for (TrackPoint trackPoint :checkpoints) {
+                        Log.d(TAG, "    point: lat " + trackPoint.getLatitude() + ", lon " + trackPoint.getLongitude() + " " + trackPoint.getName());
                     }
                 }
             }
         }
-
     }
+
+    private boolean artworkReached(){
+        if(this.mLocation!=null) {
+            for (TrackPoint loc : checkpoints) {
+                Location tmp = new Location("tmp");
+                tmp.setLatitude(loc.getLatitude());
+                tmp.setLongitude(loc.getLongitude());
+                float result = mLocation.distanceTo(tmp);
+                Log.d(TAG, "AllcheckpointDistance: "+result);
+                if (result <= 30) {
+                    dataHelper.setArtworkReached(Integer.parseInt(loc.getName()));
+                    if (serviceIsRunningInForeground(this)) {
+                        mNotificationManager.notify(NOTIFICATION_ID+3, getArtworkReachedNotification());
+                    }
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
     private void getLastLocation() {
         try {
             mFusedLocationClient.getLastLocation()
@@ -339,7 +391,6 @@ public class LocationService extends Service  {
                                 mLocation = task.getResult();
                                 Intent intent = new Intent(ACTION_BROADCAST);
                                 intent.putExtra(EXTRA_LOCATION, mLocation);
-
                                 LocalBroadcastManager.getInstance(getApplicationContext()).sendBroadcast(intent);
                             } else {
                                 Log.w(TAG, "Failed to get location.");
@@ -355,11 +406,10 @@ public class LocationService extends Service  {
         Log.i(TAG, "New location: " + location);
 
         mLocation = location;
-
         // Notify anyone listening for broadcasts about the new location.
         Intent intent = new Intent(ACTION_BROADCAST);
         intent.putExtra(EXTRA_LOCATION, location);
-
+        intent.putExtra(EXTRA_REACHED,artworkReached());
         LocalBroadcastManager.getInstance(getApplicationContext()).sendBroadcast(intent);
 
         // Update notification content if running as a foreground service.

@@ -4,6 +4,193 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="@drawable/blur_bg"
     tools:context=".InfoActivity">
+
+    <Button
+        android:id="@+id/back"
+        android:layout_width="150dp"
+        android:layout_height="70dp"
+        android:layout_marginStart="32dp"
+        android:layout_marginTop="32dp"
+        android:background="@drawable/back"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <ScrollView
+        android:id="@+id/scrollView2"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginStart="32dp"
+        android:layout_marginTop="24dp"
+        android:layout_marginEnd="32dp"
+        android:layout_marginBottom="170dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/back">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center"
+                android:text="Tim Berresheims Bilderreise –  die Augmented-Reality-Radroute durch das Heinsberger Land "
+                android:textColor="#000000"
+                android:textSize="20sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                android:gravity="center"
+                android:text="Willkommen im Heinsberger Land, wo die Landschaft weit ist und der Horizont unendlich. Hier, in der westlichsten Ecke Deutschlands, treffen sich Natur und Kultur, verbunden durch ein über 550 km bestens ausgebautes Radwegenetz mit Knotenpunktsystem. "
+                android:textColor="#000000"
+                android:textSize="20sp" />
+
+            <ImageView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center"
+                app:srcCompat="@drawable/infopageimg" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center"
+                android:text="Tim Berresheims Bilderreise ist direkt in dieses intuitiv befahrbare Streckennetz integriert und rund 90 km lang. Zur Auswahl stehen ein landschaftlich begeisternder Rundkurs sowie dessen Aufteilung in eine West- (ca. 51 km) und eine Ostschleife (ca. 45 km). Hier verschmilzt die historische Umgebung mit prägnanter zeitgenössischer Kunst, die durch modernste Technologie entstand – auf noch nie dagewesene Art und Weise"
+                android:textColor="#000000"
+                android:textSize="20sp" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center"
+                android:text="„TB – Bilderreise AR“ erweitert die Wirklichkeit um mind. 17 Augmented-Reality-Erlebnisse an von Tim Berresheim ausgewählten Orten. Entlang der Strecke gibt es viele computeranimierte Werke des digital arbeitenden Künstlers zu entdecken und begehen."
+                android:textColor="#000000"
+                android:textSize="20sp" />
+
+            <ImageView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center"
+                app:srcCompat="@drawable/artwork3" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center"
+                android:text="Zur Orientierung auf dem Rad hilft die Routenkarte der App, zusammen mit einem kostenfreien Pocketguide und beschilderten Wegweisern entlang der einzelnen Abschnitte. Auch auf outdooractive.de sind die Strecke und weitere Navigationsmöglichkeiten zu finden. "
+                android:textColor="#000000"
+                android:textSize="20sp" />
+
+            <ImageView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center"
+                app:srcCompat="@drawable/artwork4" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center"
+                android:text="Am offiziellen Startpunkt, der Tourist-Information Naturpark-Tor (Pontorsonallee 16, 41849 Wassenberg), stehen auch Parkplätze zur Verfügung. Wer in der Woche auf den hohen Bergfried der Burg Wassenberg möchte, kann sich in der Tourist-Information den Schlüssel leihen"
+                android:textColor="#000000"
+                android:textSize="20sp" />
+
+            <ImageView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center"
+                app:srcCompat="@drawable/artwork2" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center"
+                android:text="Wer mit seinem Rad in öffentlichen Verkehrsmitteln anreist, fährt am besten bis Heinsberg (Rheinland) und beginnt die Route dann zum Beispiel an der Tourist-Information im Museum BEGAS HAUS (Hochstraße 21, 52525 Heinsberg). "
+                android:textColor="#000000"
+                android:textSize="20sp" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center"
+                android:text="Noch mehr über die Nutzungsmöglichkeiten dieser App bietet das Tutorial-Video mit John Lemon. Dort verrät der zitronige Tour Guide außerdem, wie man erste Augmented-Reality-Erfahrungen sammeln kann – auch ohne vor Ort zu sein"
+                android:textColor="#000000"
+                android:textSize="20sp" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center"
+                android:text="Tipps und Anregungen für einen unvergesslichen Aufenthalt im Heinsberger Land gibt es auf heinsberger-land.de , Facebook und Instagram."
+                android:textColor="#000000"
+                android:textSize="20sp" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center"
+                android:text="Umgesetzt und unterstützt wurde die Augmented-Reality-Radroute von:"
+                android:textColor="#000000"
+                android:textSize="20sp" />
+        </LinearLayout>
+    </ScrollView>
+
+    <LinearLayout
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginStart="32dp"
+        android:layout_marginEnd="32dp"
+        android:orientation="horizontal"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/scrollView2">
+
+        <ImageView
+            android:id="@+id/imageView3"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            app:srcCompat="@drawable/heinsberger" />
+
+        <ImageView
+            android:id="@+id/imageView4"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            app:srcCompat="@drawable/blitz_s" />
+
+        <ImageView
+            android:id="@+id/imageView5"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            app:srcCompat="@drawable/sna" />
+
+        <ImageView
+            android:id="@+id/imageView6"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            app:srcCompat="@drawable/ic_nrw" />
+    </LinearLayout>
+
+    <Button
+        android:id="@+id/lang_btn"
+        android:layout_width="140dp"
+        android:layout_height="75dp"
+        android:layout_marginEnd="32dp"
+        android:background="@drawable/en"
+        app:layout_constraintBottom_toBottomOf="@+id/back"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="@+id/back" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

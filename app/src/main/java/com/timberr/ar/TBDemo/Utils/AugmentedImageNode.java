@@ -35,7 +35,7 @@ public class AugmentedImageNode extends AnchorNode {
             renderable = ModelRenderable.builder()
                     .setSource(
                             context,
-                            R.raw.millicharv2)
+                            R.raw.pocketguideseite2)
                     .setIsFilamentGltf(true)
                     .build();
 
@@ -66,12 +66,8 @@ public class AugmentedImageNode extends AnchorNode {
         // Set the anchor based on the center of the image.
         setAnchor(image.createAnchor(image.getCenterPose()));
 
-        Vector3 localPosition = new Vector3();
-        localPosition.set(0.07f , 0.0f, 0.2f );
         node = new Node();
         node.setParent(this);
-        node.setLocalScale(new Vector3( 0.1f,0.1f,0.1f));
-        node.setLocalPosition(localPosition);
         node.setRenderable(renderable.getNow(null));
         Log.d(TAG, "setImage: "+ node.getRenderableInstance());
     }

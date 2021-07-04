@@ -17,7 +17,7 @@ public class TutorialActivity extends AppCompatActivity implements SurfaceHolder
     private int width;
     private int height;
     private SurfaceView tutorialSurface;
-    private MediaPlayerHelper mediaPlayer = new MediaPlayerHelper("tutorial_vdo.mp4");;
+    private MediaPlayerHelper mediaPlayer = new MediaPlayerHelper("tutorial_vdo_de.mp4");;
     private Button skip;
     private Button back;
     @Override
@@ -71,10 +71,7 @@ public class TutorialActivity extends AppCompatActivity implements SurfaceHolder
     private void initVideoView(){
         ConstraintLayout parentLayout = (ConstraintLayout)findViewById(R.id.parent_layout);
         ConstraintSet set = new ConstraintSet();
-        if(width<height)
-            height = width;
-        else
-            width = height;
+        height=height-height/3;
         set.clone(parentLayout);
         // connect start and end point of views, in this case top of child to top of parent.
         set.connect(tutorialSurface.getId(), ConstraintSet.TOP, parentLayout.getId(), ConstraintSet.TOP, 0);

@@ -16,8 +16,7 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.85" />
+        app:layout_constraintTop_toBottomOf="@+id/tutorial_vdo" />
 
     <SurfaceView
         android:id="@+id/tutorial_vdo"
@@ -26,8 +25,8 @@
 
     <Button
         android:id="@+id/back"
-        android:layout_width="200dp"
-        android:layout_height="95dp"
+        android:layout_width="150dp"
+        android:layout_height="70dp"
         android:layout_marginStart="32dp"
         android:layout_marginTop="32dp"
         android:background="@drawable/back"

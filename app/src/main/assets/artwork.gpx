@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<gpx version="1.1" creator="outdooractive - http://www.outdooractive.com" xmlns="http://www.topografix.com/GPX/1/1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.topografix.com/GPX/1/1 http://www.topografix.com/GPX/1/1/gpx.xsd" xmlns:oa="http://www.outdooractive.com/GPX/Extensions/1">
+
+  <trk>
+    <name>Tim Berresheims Bilderreise - ARTWORKS</name>
+    <desc>ARTWORKS</desc>
+    <type>cycling</type>
+    <trkseg>
+      <trkpt lat="51.099086" lon="6.159257">
+        <name>1</name>
+        <desc>2</desc>
+      </trkpt>
+      <trkpt lat="51.100892" lon="6.15771">
+        <name>2</name>
+        <desc>2</desc>
+      </trkpt>
+      <trkpt lat="51.131239" lon="6.089418">
+        <name>3</name>
+        <desc>2</desc>
+      </trkpt>
+      <trkpt lat="51.072432" lon="5.992083">
+        <name>4</name>
+        <desc>2</desc>
+      </trkpt>
+      <trkpt lat="51.031573" lon="5.985918">
+        <name>5</name>
+        <desc>2</desc>
+      </trkpt>
+      <trkpt lat="51.013813" lon="6.037959">
+        <name>6</name>
+        <desc>2</desc>
+      </trkpt>
+      <trkpt lat="51.06025" lon="6.093267">
+        <name>7</name>
+        <desc>2</desc>
+      </trkpt>
+      <trkpt lat="51.058228" lon="6.173339">
+        <name>8</name>
+        <desc>3</desc>
+      </trkpt>
+      <trkpt lat="51.050628" lon="6.204579">
+        <name>9</name>
+        <desc>3</desc>
+      </trkpt>
+      <trkpt lat="51.056557" lon="6.208612">
+        <name>10</name>
+        <desc>3</desc>
+      </trkpt>
+      <trkpt lat="51.068524" lon="6.277999">
+        <name>11</name>
+        <desc>3</desc>
+      </trkpt>
+      <trkpt lat="51.068119" lon="6.278686">
+        <name>12</name>
+        <desc>3</desc>
+      </trkpt>
+      <trkpt lat="51.121186" lon="6.264326">
+        <name>13</name>
+        <desc>3</desc>
+      </trkpt>
+      <trkpt lat="51.104477" lon="6.177899">
+        <name>14</name>
+        <desc>3</desc>
+      </trkpt>
+      <trkpt lat="51.103102" lon="6.052899">
+        <name>21</name>
+        <desc>4</desc>
+      </trkpt>
+      <trkpt lat="51.051113" lon="5.866353">
+        <name>22</name>
+        <desc>4</desc>
+      </trkpt>
+      <trkpt lat="51.118383" lon="6.192719">
+        <name>23</name>
+        <desc>4</desc>
+      </trkpt>
+      <trkpt lat="51.106498" lon="6.177899">
+        <name>24</name>
+        <desc>5</desc>
+      </trkpt>
+      <trkpt lat="50.776399" lon="6.083909">
+        <name>25</name>
+        <desc>5</desc>
+      </trkpt>
+      <trkpt lat="50.963899" lon="6.121553">
+        <name>26</name>
+        <desc>5</desc>
+      </trkpt>
+      <trkpt lat="50.919995" lon="6.120102">
+        <name>27</name>
+        <desc>5</desc>
+      </trkpt>
+    </trkseg>
+  </trk>
+</gpx>
