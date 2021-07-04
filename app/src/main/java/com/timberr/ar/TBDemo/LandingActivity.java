@@ -121,7 +121,7 @@ public class LandingActivity extends AppCompatActivity {
     public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] results) {
         super.onRequestPermissionsResult(requestCode, permissions, results);
         if (!PermissionHelper.hasCameraPermission(this)) {
-            Toast.makeText(this, "Accept all permissions to run this application", Toast.LENGTH_LONG)
+            Toast.makeText(this, getText(R.string.permission_camera), Toast.LENGTH_LONG)
                     .show();
             if (!PermissionHelper.shouldShowRequestPermissionRationale(this)) {
                 // Permission denied with checking "Do not ask again".

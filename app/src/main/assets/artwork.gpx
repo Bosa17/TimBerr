@@ -90,6 +90,10 @@
         <name>27</name>
         <desc>5</desc>
       </trkpt>
+      <trkpt lat="50.785559" lon="6.053371">
+         <name>27</name>
+         <desc>5</desc>
+      </trkpt>
     </trkseg>
   </trk>
 </gpx>

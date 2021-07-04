@@ -11,7 +11,6 @@ import android.widget.FrameLayout;
 import com.google.ar.core.Config;
 import com.google.ar.core.Session;
 import com.google.ar.sceneform.ux.ArFragment;
-import com.google.ar.sceneform.ux.HandMotionView;
 
 public class ArtworkDisplayARFragment extends ArFragment {
 

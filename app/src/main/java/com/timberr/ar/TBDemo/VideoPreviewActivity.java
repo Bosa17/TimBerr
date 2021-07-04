@@ -14,7 +14,7 @@ public class VideoPreviewActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_video_preview);
-        Toast.makeText(this, "Video Saved", Toast.LENGTH_LONG).show();
+        Toast.makeText(this, getText(R.string.artworkdisplay_vdo), Toast.LENGTH_LONG).show();
         mediaViewer=findViewById(R.id.videoViewer);
         Intent intent = getIntent();
         path= intent.getExtras().getString("path");

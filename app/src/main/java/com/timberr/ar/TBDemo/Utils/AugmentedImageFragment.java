@@ -32,7 +32,7 @@ public class AugmentedImageFragment extends ArFragment {
     // directory.  Opening this image on your computer is a good quick way to test the augmented image
     // matching.
     private static final String IMAGE_1 = "trigger.png";
-    private static final String IMAGE_2 = "trigger_2.PNG";
+    private static final String IMAGE_2 = "trigger_2.png";
     // Do a runtime check for the OpenGL level available at runtime to avoid Sceneform crashing the
     // application.
     private static final double MIN_OPENGL_VERSION = 3.0;

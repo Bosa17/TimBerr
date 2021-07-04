@@ -3,7 +3,6 @@ package com.timberr.ar.TBDemo.Utils;
 import android.graphics.Bitmap;
 import android.os.Environment;
 import android.util.Log;
-import android.widget.Toast;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -14,7 +13,7 @@ import java.util.Date;
 
 public class FileUtils {
 
-    public static interface photoSavedListener{
+    public interface photoSavedListener{
         /**
          * callback method when the photo is saved
          */
@@ -52,13 +51,13 @@ public class FileUtils {
         return pictureFile;
     }
 
-    private  static File getOutputMediaFile(){
+    public  static File getOutputMediaFile(){
         // To be safe, you should check that the SDCard is mounted
         // using Environment.getExternalStorageState() before doing this.
         File mediaStorageDir = new File(
                 Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES)
-                        + "/TB");
-
+                        + "/Bilderreise");
+        Log.d(TAG, "getOutputMediaFile: "+mediaStorageDir);
 
         // This location works best if you want the created images to be shared
         // between applications and persist after your app has been uninstalled.
@@ -72,8 +71,9 @@ public class FileUtils {
         // Create a media file name
         String timeStamp = new SimpleDateFormat("ddMMyyyy_HHmm").format(new Date());
         File mediaFile;
-        String mImageName="TBDemo_"+ timeStamp +".jpg";
+        String mImageName="TB_"+ timeStamp +".jpg";
         mediaFile = new File(mediaStorageDir.getPath() + File.separator + mImageName);
+        Log.d(TAG, "getOutputMediaFile: "+mediaFile);
         return mediaFile;
     }
 
@@ -81,7 +81,7 @@ public class FileUtils {
         File mediaStorageDir=
                     new File(
                             Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES)
-                                    + "/TB");
+                                    + "/Bilderreise");
         // Create the storage directory if it does not exist
         if (! mediaStorageDir.exists()){
             if (! mediaStorageDir.mkdirs()){
@@ -89,11 +89,11 @@ public class FileUtils {
             }
         }
         String timeStamp = new SimpleDateFormat("ddMMyyyy_HHmm").format(new Date());
-        String mVideoName="TBDemo_"+ timeStamp +".mp4";
+        String mVideoName="TB_"+ timeStamp +".mp4";
         File videoPath =
                 new File(
                         mediaStorageDir,  mVideoName);
-        File dir = videoPath.getParentFile();
+        Log.d(TAG, "getOutputMediaFile: "+videoPath);
         return videoPath;
     }
 

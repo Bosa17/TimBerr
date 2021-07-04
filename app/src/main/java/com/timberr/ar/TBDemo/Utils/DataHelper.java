@@ -9,7 +9,7 @@ import static com.timberr.ar.TBDemo.Utils.LocationService.EXTRA_REACHED;
 
 public class DataHelper {
     private Context mContext;
-
+    private static String EXTRA_LANGUAGE= "Language";
 
     public DataHelper(Context context) {
         mContext = context;
@@ -31,5 +31,18 @@ public class DataHelper {
 
     public int getArtworkReached(){
         return Hawk.get(EXTRA_REACHED);
+    }
+
+    public void setLaguage(int lang){
+        Hawk.put(EXTRA_LANGUAGE, lang);
+    }
+    public void toggleLanguage(){
+        if (getLanguage()==1)
+            setLaguage(0);
+        else
+            setLaguage(1);
+    }
+    public int getLanguage(){
+        return Hawk.get(EXTRA_LANGUAGE,1);
     }
 }

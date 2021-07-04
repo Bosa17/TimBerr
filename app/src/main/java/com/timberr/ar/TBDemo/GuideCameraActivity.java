@@ -1,5 +1,6 @@
 package com.timberr.ar.TBDemo;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.ArraySet;
@@ -7,6 +8,7 @@ import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
+import android.widget.Toast;
 
 import com.google.android.filament.gltfio.Animator;
 import com.google.android.filament.gltfio.FilamentAsset;
@@ -15,6 +17,8 @@ import com.google.ar.core.Frame;
 import com.google.ar.sceneform.FrameTime;
 import com.google.ar.sceneform.ux.ArFragment;
 import com.timberr.ar.TBDemo.Utils.AugmentedImageNode;
+import com.timberr.ar.TBDemo.Utils.DataHelper;
+import com.timberr.ar.TBDemo.Utils.PermissionHelper;
 
 import java.util.Collection;
 import java.util.HashMap;
@@ -53,7 +57,10 @@ public class GuideCameraActivity extends AppCompatActivity {
 
         arFragment = (ArFragment) getSupportFragmentManager().findFragmentById(R.id.augmented_image_fragment);
         fitToScanView = findViewById(R.id.image_view_fit_to_scan);
-
+        if (new DataHelper(this).getLanguage()==1)
+            fitToScanView.setBackgroundResource(R.drawable.fit_to_scan_de);
+        else
+            fitToScanView.setBackgroundResource(R.drawable.fit_to_scan);
         back=findViewById(R.id.back);
         back.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -72,6 +79,9 @@ public class GuideCameraActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
+        if(!PermissionHelper.hasPermission(this)){
+            PermissionHelper.requestPermissions(this);
+        }
         if (augmentedImageMap.isEmpty()) {
             fitToScanView.setVisibility(View.VISIBLE);
         }
@@ -122,21 +132,39 @@ public class GuideCameraActivity extends AppCompatActivity {
                 case TRACKING:
                     // Have to switch to UI Thread to update View.
                     fitToScanView.setVisibility(View.GONE);
-
+                    AugmentedImageNode node;
                     // Create a new anchor for newly found images.
                     if (!augmentedImageMap.containsKey(augmentedImage)) {
-                        AugmentedImageNode node = new AugmentedImageNode(this);
+                        if (augmentedImage.getName().equals("trigger.png")) {
+                            node = new AugmentedImageNode(this,"pocketguideseite2.glb" );
+                        }
+                        else
+                            node = new AugmentedImageNode(this,"pocketguideseite1.glb" );
                         node.setImage(augmentedImage);
                         augmentedImageMap.put(augmentedImage, node);
                         arFragment.getArSceneView().getScene().addChild(node);
-
                     }
                     break;
 
                 case STOPPED:
+                    arFragment.getArSceneView().getScene().removeChild(augmentedImageMap.get(augmentedImage));
                     augmentedImageMap.remove(augmentedImage);
                     break;
             }
+        }
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        if (!PermissionHelper.hasCameraPermission(this)) {
+            Toast.makeText(this, getText(R.string.permission_camera), Toast.LENGTH_LONG)
+                    .show();
+            if (!PermissionHelper.shouldShowRequestPermissionRationale(this)) {
+                // Permission denied with checking "Do not ask again".
+                PermissionHelper.launchPermissionSettings(this);
+            }
+            finish();
         }
     }
 

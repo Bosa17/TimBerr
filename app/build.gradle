@@ -19,11 +19,12 @@ android {
     defaultConfig {
         applicationId "com.timberr.ar.TBDemo"
 
+        assetPacks = [":asset_pack"]
         // Sceneform requires minSdkVersion >= 24.
         minSdkVersion 24
         targetSdkVersion 30
-        versionCode 1
-        versionName "1.0"
+        versionCode 2
+        versionName "1.1"
     }
     // Sceneform libraries use language constructs from Java 8.
     // Add these compile options if targeting minSdkVersion < 26.
@@ -46,6 +47,7 @@ dependencies {
 
     api 'io.ticofab.androidgpxparser:parser:1.6.0'
 
+    implementation 'com.google.android.play:core:1.10.0'
     implementation 'androidx.appcompat:appcompat:1.3.0'
     implementation 'androidx.constraintlayout:constraintlayout:2.0.4'
     implementation 'hu.don.easylut:easylut:0.5'
@@ -57,9 +59,6 @@ dependencies {
     implementation 'com.github.javiersantos:BottomDialogs:1.2.1'
 }
 
-apply plugin: 'com.google.ar.sceneform.plugin'
 repositories {
-    maven { url 'https://dl.bintray.com/kotlin/kotlin-eap' }
     mavenCentral()
 }
-

@@ -505,7 +505,7 @@ public abstract class Renderable {
         @NonNull Context context, T renderable) {
       LoadRenderableFromFilamentGltfTask<T> loader =
           new LoadRenderableFromFilamentGltfTask<>(
-              renderable, context, Preconditions.checkNotNull(sourceUri), uriResolver);
+              renderable, context, null, uriResolver);
       return loader.downloadAndProcessRenderable(Preconditions.checkNotNull(inputStreamCreator));
     }
 

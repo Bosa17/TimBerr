@@ -39,11 +39,11 @@ public class PhotoHelper {
                     toast.show();
                     return;
                 }
-                Toast.makeText(context, "Photo Saved", Toast.LENGTH_LONG).show();
+                Toast.makeText(context, context.getText(R.string.artworkdisplay_photo), Toast.LENGTH_LONG).show();
 
             } else {
                 Toast toast = Toast.makeText(context,
-                        "Failed to copyPixels: " + copyResult, Toast.LENGTH_LONG);
+                        "Failed " + copyResult, Toast.LENGTH_LONG);
                 toast.show();
             }
             handlerThread.quitSafely();

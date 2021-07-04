@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8"?><!--
+   Copyright 2018 Google LLC.
+
+   Licensed under the Apache License, Version 2.0 (the "License");
+   you may not use this file except in compliance with the License.
+   You may obtain a copy of the License at
+
+      http://www.apache.org/licenses/LICENSE-2.0
+
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
+-->
+<resources>
+    <string name="app_name">TB - Bilderreise AR</string>
+
+
+    <!--    notification-->
+    <string name="notification_title">Das Abenteuer fortsetzen?</string>
+    <string name="notification_content">Klicken Sie auf Navigieren, um fortzufahren oder auf Route stoppen, um zu stoppen.</string>
+    <string name="notification_navigate">Navigieren</string>
+    <string name="notification_stoproute">Route stoppen</string>
+    <string name="notification_title_nearby">Kunstwerke in der Nähe!</string>
+    <string name="notification_content_nearby">Sie befinden sich in der Nähe eines Kunstwerks, klicken Sie hier, um es zu öffnen.</string>
+
+    <!--    Info Activity-->
+    <string name="para_1">Tim Berresheims Bilderreise – die Augmented-Reality-Radroute durch das Heinsberger Land</string>
+    <string name="para_2">Willkommen im Heinsberger Land, wo die Landschaft weit ist und der Horizont unendlich. Hier, in der westlichsten Ecke Deutschlands, treffen sich Natur und Kultur, verbunden durch ein über 550 km bestens ausgebautes Radwegenetz mit Knotenpunktsystem. </string>
+    <string name="para_3">Tim Berresheims Bilderreise ist direkt in dieses intuitiv befahrbare Streckennetz integriert und rund 90 km lang. Zur Auswahl stehen ein landschaftlich begeisternder Rundkurs sowie dessen Aufteilung in eine West- (ca. 51 km) und eine Ostschleife (ca. 45 km). Hier verschmilzt die historische Umgebung mit prägnanter zeitgenössischer Kunst, die durch modernste Technologie entstand – auf noch nie dagewesene Art und Weise. </string>
+    <string name="para_4">„TB – Bilderreise AR“ erweitert die Wirklichkeit um mind. 17 Augmented-Reality-Erlebnisse an von Tim Berresheim ausgewählten Orten. Entlang der Strecke gibt es viele computeranimierte Werke des digital arbeitenden Künstlers zu entdecken und begehen</string>
+    <string name="para_5">Zur Orientierung auf dem Rad hilft die Routenkarte der App, zusammen mit einem kostenfreien Pocketguide und beschilderten Wegweisern entlang der einzelnen Abschnitte. Auch auf outdooractive.de sind die Strecke und weitere Navigationsmöglichkeiten zu finden. </string>
+    <string name="para_6">Am offiziellen Startpunkt, der Tourist-Information Naturpark-Tor (Pontorsonallee 16, 41849 Wassenberg), stehen auch Parkplätze zur Verfügung. Wer in der Woche auf den hohen Bergfried der Burg Wassenberg möchte, kann sich in der Tourist-Information den Schlüssel leihen. </string>
+    <string name="para_7">Wer mit seinem Rad in öffentlichen Verkehrsmitteln anreist, fährt am besten bis Heinsberg (Rheinland) und beginnt die Route dann zum Beispiel an der Tourist-Information im Museum BEGAS HAUS (Hochstraße 21, 52525 Heinsberg).</string>
+    <string name="para_8">Noch mehr über die Nutzungsmöglichkeiten dieser App bietet das Tutorial-Video mit John Lemon. Dort verrät der zitronige Tour Guide außerdem, wie man erste Augmented-Reality-Erfahrungen sammeln kann – auch ohne vor Ort zu sein.  </string>
+    <string name="para_9">Tipps und Anregungen für einen unvergesslichen Aufenthalt im Heinsberger Land gibt es auf heinsberger-land.de, Facebook und Instagram.</string>
+    <string name="para_10">Umgesetzt und unterstützt wurde die Augmented-Reality-Radroute von:</string>
+
+    <!--    Permissions-->
+    <string name="permission_camera"> Darf „TB – Bilderreise AR” auf Deine Kamera zugreifen, damit Du Fotos und Videos von Deinen Erlebnissen aufnehmen kannst?  </string>
+    <string name="permission_storage">   Darf „TB – Bilderreise AR” Deine Foto- und Videoaufnahmen in Deiner Bildergalerie speichern, damit keine Erinnerungen verloren gehen? </string>
+    <string name="permission_location">   Darf „TB – Bilderreise AR” auf Deinen Standort zugreifen, damit Du Dich auf den Routen sicher orientieren kannst und die AR-Kunstwerke findest? </string>
+
+    <!--  Navigation Activity-->
+    <string name="navigation_reached">Du hast erreicht!</string>
+    <string name="navigation_title">Kunstwerke in der Nähe!</string>
+    <string name="navigation_content">Klicken Sie auf Anzeigen, um das Kunstwerk zu sehen</string>
+    <string name="navigation_show">Anzeigen</string>
+    <string name="navigation_hide">Ausblenden</string>
+
+    <!--  ArtWorkDisplay Activity-->
+    <string name="artworkdisplay_out_of_radius">Sie haben den Radius verlassen!</string>
+    <string name="artworkdisplay_photo">Foto gespeichert!</string>
+    <string name="artworkdisplay_vdo">Video gespeichert!</string>
+</resources>

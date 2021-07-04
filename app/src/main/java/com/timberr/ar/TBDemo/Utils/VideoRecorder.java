@@ -19,7 +19,7 @@ import java.io.IOException;
  * class to select a predefined set of parameters.
  */
 public class VideoRecorder {
-    public static interface VideoSavedListener {
+    public interface VideoSavedListener {
         /**
          * callback method when the photo is saved
          */
@@ -27,10 +27,7 @@ public class VideoRecorder {
     }
 
     private VideoSavedListener mVideoSaved;
-    /**
-     * Specifies the bearing event listener to which bearing events must be sent.
-     * @param videoSavedListener the bearing event listener
-     */
+
     public void setVideoSavedListener(VideoSavedListener videoSavedListener)
     {
         mVideoSaved = videoSavedListener;

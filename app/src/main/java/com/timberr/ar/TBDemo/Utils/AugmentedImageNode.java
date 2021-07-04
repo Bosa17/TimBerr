@@ -1,22 +1,18 @@
 package com.timberr.ar.TBDemo.Utils;
 
 import android.content.Context;
-import android.net.Uri;
 import android.util.Log;
-import android.view.Gravity;
-import android.widget.Toast;
 
 import com.google.android.filament.gltfio.FilamentAsset;
 import com.google.ar.core.AugmentedImage;
 import com.google.ar.sceneform.AnchorNode;
 import com.google.ar.sceneform.Node;
-import com.google.ar.sceneform.math.Quaternion;
-import com.google.ar.sceneform.math.Vector3;
 import com.google.ar.sceneform.rendering.ModelRenderable;
-import com.timberr.ar.TBDemo.GuideCameraActivity;
-import com.timberr.ar.TBDemo.R;
 
+import java.io.InputStream;
+import java.util.concurrent.Callable;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionException;
 
 public class AugmentedImageNode extends AnchorNode {
 
@@ -29,13 +25,19 @@ public class AugmentedImageNode extends AnchorNode {
     // the error handling and asynchronous loading.  The loading is started with the
     // first construction of an instance, and then used when the image is set.
     private CompletableFuture<ModelRenderable> renderable;
-    public AugmentedImageNode(Context context) {
+    public AugmentedImageNode(Context context,String ref) {
+        Callable<InputStream> is= () -> {
+            try {
+                return context.getAssets().open(ref);
+            } catch (Exception e) {
+                throw new CompletionException(e);
+            }
+        };
         // Upon construction, start loading the models for the corners of the frame.
         if (renderable == null) {
             renderable = ModelRenderable.builder()
                     .setSource(
-                            context,
-                            R.raw.pocketguideseite2)
+                            context, is)
                     .setIsFilamentGltf(true)
                     .build();
 

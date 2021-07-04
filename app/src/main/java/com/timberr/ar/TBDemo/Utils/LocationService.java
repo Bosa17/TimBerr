@@ -263,8 +263,6 @@ public class LocationService extends Service  {
     private Notification getNotification() {
         Intent intent = new Intent(this, LocationService.class);
 
-        CharSequence text = "Click on Navigate to continue or Stop Route to stop.";
-        CharSequence title = "Continue the adventure?";
         // Extra to help us figure out if we arrived in onStartCommand via the notification or not.
         intent.putExtra(EXTRA_STARTED_FROM_NOTIFICATION, true);
 
@@ -277,17 +275,17 @@ public class LocationService extends Service  {
                 new Intent(this, NavigationActivity.class), 0);
 
         NotificationCompat.Builder builder = new NotificationCompat.Builder(this)
-                .addAction(R.drawable.ic_launcher, "Navigate",
+                .addAction(R.drawable.ic_launcher, getString(R.string.notification_navigate),
                         activityPendingIntent)
-                .addAction(R.drawable.ic_cancel, "Stop Route",
+                .addAction(R.drawable.ic_cancel, getString(R.string.notification_stoproute),
                         servicePendingIntent)
-                .setContentText(text)
+                .setContentText(getString(R.string.notification_content))
                 .setOnlyAlertOnce(true)
-                .setContentTitle(title)
+                .setContentTitle(getString(R.string.notification_title))
                 .setOngoing(true)
                 .setPriority(Notification.PRIORITY_HIGH)
                 .setSmallIcon(R.drawable.rabbit)
-                .setTicker(text)
+                .setTicker(getString(R.string.notification_content))
                 .setWhen(System.currentTimeMillis());
 
         // Set the Channel ID for Android O.
@@ -303,20 +301,18 @@ public class LocationService extends Service  {
      */
     private Notification getArtworkReachedNotification() {
 
-        CharSequence text = "You are near an artwork, click here to open it!";
-        CharSequence title = "Artwork Nearby!";
         // The PendingIntent to launch activity.
         PendingIntent activityPendingIntent = PendingIntent.getActivity(this, 0,
                 new Intent(this, ArtWorkDisplayActivity.class), 0);
 
         NotificationCompat.Builder builder = new NotificationCompat.Builder(this)
                 .setContentIntent(activityPendingIntent)
-                .setContentText(text)
+                .setContentText(getString(R.string.notification_content_nearby))
                 .setOnlyAlertOnce(true)
-                .setContentTitle(title)
+                .setContentTitle(getString(R.string.notification_title_nearby))
                 .setPriority(Notification.PRIORITY_HIGH)
                 .setSmallIcon(R.drawable.rabbit)
-                .setTicker(text)
+                .setTicker(getString(R.string.notification_content_nearby))
                 .setWhen(System.currentTimeMillis());
 
         // Set the Channel ID for Android O.

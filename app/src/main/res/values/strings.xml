@@ -14,6 +14,45 @@
    limitations under the License.
 -->
 <resources>
-    <string name="app_name">TB BILDERREISE</string>
-    <string name="distance_remaining">Distance Remaining to next Checkpoint : </string>
+    <string name="app_name">TB - Bilderreise AR</string>
+
+
+    <!--    notification-->
+    <string name="notification_title">Continue the adventure?</string>
+    <string name="notification_content">Click on Navigate to continue or Stop Route to stop.</string>
+    <string name="notification_navigate">Navigate</string>
+    <string name="notification_stoproute">Stop Route</string>
+    <string name="notification_title_nearby">Artwork Nearby!</string>
+    <string name="notification_content_nearby">You are near an artwork, click here to open it!</string>
+
+    <!--    Info Activity-->
+    <string name="para_1">Tim Berresheim’s Bilderreise – an Augmented-Reality cycling route through the Heinsberger Land region</string>
+    <string name="para_2">Welcome to the Heinsberger Land region, with its soft-rolling landscapes and endless horizon. Here, in the westernmost corner of Germany, nature meets culture – thanks to over 550 km of cycle paths that are connected to form an excellently-developed network of pure biking bliss.</string>
+    <string name="para_3">Easy to navigate and jam-packed with sights, Tim Berresheim’s Bilderreise weaves a total of three options into this web of cycling routes: the full distance on a scenic circular itinerary worth roughly 90 km or, splitting the route into smaller portions, a western loop (approx. 51 km) and an eastern loop (approx. 45 km). The trails beautifully intertwine historic surroundings and striking contemporary art made with cutting-edge technology – in a way never seen before.</string>
+    <string name="para_4">All along the route, “TB – Bilderreise AR” adds a minimum of 17 augmented-reality experiences to a number of locations hand-picked by Tim Berresheim: tailor-made computer-animated works by the digital artist that can be viewed, explored and played with by the user.</string>
+    <string name="para_5">For added convenience while you’re pedalling away on your bike, the app is equipped with a route map to help with orientation – together with a free pocket guide and signs that have been placed on the official signposts along the way. The route and additional navigation options can also be found at outdooractive.de. </string>
+    <string name="para_6">Parking is available at the official starting point, the tourist information office Naturpark-Tor (Pontorsonallee 16, 41849 Wassenberg). If you’re visiting during the week and would like to start your explorations with some lofty views from Wassenberg’s medieval tower, the Bergfried, feel free to ask for the keys at the tourist office. </string>
+    <string name="para_7">If you are planning to arrive by public transport, the best option is to catch a train or bus to Heinsberg (Rheinland) station and then start your tour e.g. from the tourist info point at the BEGAS HAUS museum (Hochstraße 21, 52525 Heinsberg). </string>
+    <string name="para_8">To find out more about the perks of using this app, check out the tutorial featuring John Lemon. In the video, the citrusy tour guide also explains how to access some exciting augmented-reality sneak previews – from the comfort of your home. </string>
+    <string name="para_9">More recommendations and suggestions on how to make your time in the region truly memorable are available at heinsberger-land.de as well as on Facebook and Instagram.</string>
+    <string name="para_10">The augmented reality cycling route was designed, developed and supported by:</string>
+
+    <!--    Permissions-->
+    <string name="permission_camera"> Give “TB – Bilderreise AR” permission to access your camera? That way, you can take photos and videos of your experiences. </string>
+    <string name="permission_storage"> Give “TB – Bilderreise AR” permission to save your photos and videos to your device? That way, no memories will be lost.</string>
+    <string name="permission_location">Give “TB – Bilderreise AR” permission to access your location? That way, you can safely navigate the routes and discover the hidden AR artworks.</string>
+
+    <!--  Navigation Activity-->
+    <string name="navigation_reached">You have Reached!</string>
+    <string name="navigation_title">Artwork Nearby!</string>
+    <string name="navigation_content">Click on Show to see the Artwork</string>
+    <string name="navigation_show">Show</string>
+    <string name="navigation_hide">Hide</string>
+
+    <!--  ArtWorkDisplay Activity-->
+    <string name="artworkdisplay_out_of_radius">You have moved out of the radius!</string>
+    <string name="artworkdisplay_photo">Photo Saved!</string>
+    <string name="artworkdisplay_vdo">Video Saved!</string>
+
 </resources>
+

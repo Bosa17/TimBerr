@@ -435,7 +435,7 @@ public class NavigationActivity extends AppCompatActivity implements  OnMapReady
                 // Permission was granted.
                 mService.requestLocationUpdates();
             } else {
-                Toast.makeText(this, "Accept all permissions to run this application", Toast.LENGTH_LONG)
+                Toast.makeText(this, getText(R.string.permission_location), Toast.LENGTH_LONG)
                         .show();
                 if (!PermissionHelper.shouldShowRequestPermissionRationale(this)) {
                     // Permission denied with checking "Do not ask again".
@@ -447,16 +447,16 @@ public class NavigationActivity extends AppCompatActivity implements  OnMapReady
     }
 
     public void onLocationReached() {
-        Toast.makeText(this, "You have reached!", Toast.LENGTH_SHORT).show();
+        Toast.makeText(this, getText(R.string.navigation_reached), Toast.LENGTH_SHORT).show();
 
         new Handler().postDelayed(new Runnable(){
             @Override
             public void run() {
                 if (reached) {
                     new BottomDialog.Builder(NavigationActivity.this)
-                            .setTitle("Artwork Nearby!")
-                            .setContent("Click on Show to see the Artwork")
-                            .setNegativeText("hide")
+                            .setTitle(getText(R.string.navigation_title))
+                            .setContent(getText(R.string.navigation_content))
+                            .setNegativeText(getText(R.string.navigation_hide))
                             .onNegative(new BottomDialog.ButtonCallback() {
                                 @Override
                                 public void onClick(BottomDialog dialog) {
@@ -466,7 +466,7 @@ public class NavigationActivity extends AppCompatActivity implements  OnMapReady
                             })
                             .setCancelable(false)
                             .autoDismiss(false)
-                            .setPositiveText("show")
+                            .setPositiveText(getText(R.string.navigation_show))
                             .onPositive(new BottomDialog.ButtonCallback() {
                                 @Override
                                 public void onClick(@NonNull BottomDialog dialog) {

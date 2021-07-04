@@ -10,6 +10,7 @@ import android.view.SurfaceView;
 import android.view.View;
 import android.widget.Button;
 
+import com.timberr.ar.TBDemo.Utils.DataHelper;
 import com.timberr.ar.TBDemo.Utils.MediaPlayerHelper;
 import com.timberr.ar.TBDemo.Utils.ScreenUtil;
 
@@ -17,7 +18,7 @@ public class TutorialActivity extends AppCompatActivity implements SurfaceHolder
     private int width;
     private int height;
     private SurfaceView tutorialSurface;
-    private MediaPlayerHelper mediaPlayer = new MediaPlayerHelper("tutorial_vdo_de.mp4");;
+    private MediaPlayerHelper mediaPlayer;
     private Button skip;
     private Button back;
     @Override
@@ -28,6 +29,10 @@ public class TutorialActivity extends AppCompatActivity implements SurfaceHolder
         setContentView(R.layout.activity_tutorial);
         skip =findViewById(R.id.skip_btn);
         back=findViewById(R.id.back);
+        if (new DataHelper(this).getLanguage()==1)
+            mediaPlayer=new MediaPlayerHelper("tutorial_vdo_de.mp4");
+        else
+            mediaPlayer=new MediaPlayerHelper("tutorial_vdo.mp4");
         tutorialSurface = findViewById(R.id.tutorial_vdo);
         tutorialSurface.getHolder().addCallback(this);
         back.setOnClickListener(new View.OnClickListener() {

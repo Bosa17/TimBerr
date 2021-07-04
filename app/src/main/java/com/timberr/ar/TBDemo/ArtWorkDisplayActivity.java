@@ -8,6 +8,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.ServiceConnection;
+import android.content.res.AssetManager;
 import android.content.res.Configuration;
 import android.location.Location;
 import android.media.CamcorderProfile;
@@ -49,8 +50,12 @@ import com.timberr.ar.TBDemo.Utils.PhotoHelper;
 import com.timberr.ar.TBDemo.Utils.ScreenUtil;
 import com.timberr.ar.TBDemo.Utils.VideoRecorder;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.lang.ref.WeakReference;
 import java.util.Set;
+import java.util.concurrent.Callable;
+import java.util.concurrent.CompletionException;
 
 import static java.util.concurrent.TimeUnit.SECONDS;
 
@@ -125,115 +130,116 @@ public class ArtWorkDisplayActivity extends AppCompatActivity implements FileUti
       snap=findViewById(R.id.snap);
       back=findViewById(R.id.back);
       photo_btn=findViewById(R.id.photo_btn);
-      int arAssetDrawable=R.raw.wassenberg;
+
+      String arAsset="wassenberg";
       target=new Location("artwork");
       switch (dataHelper.getArtworkReached()){
           case 1:
               target.setLatitude(51.099086);
               target.setLongitude(6.159257);
-              arAssetDrawable=R.raw.wassenberg;
+              arAsset="wassenberg";
               break;
           case 2:
               target.setLatitude(51.100892);
               target.setLongitude(6.15771);
-              arAssetDrawable=R.raw.burgwassenberg;
+              arAsset="burgwassenberg";
               break;
           case 3:
               target.setLatitude(51.131239);
               target.setLongitude(6.089418);
-              arAssetDrawable=R.raw.effeld;
+              arAsset="effeld";
               break;
           case 4:
               target.setLatitude(51.072432);
               target.setLongitude(5.992083);
-              arAssetDrawable=R.raw.motte;
+              arAsset="motte";
               break;
           case 5:
               target.setLatitude(51.031573);
               target.setLongitude(5.985918);
-              arAssetDrawable=R.raw.brebern;
+              arAsset="brebern";
               break;
           case 6:
               target.setLatitude(51.013813);
               target.setLongitude(6.037959);
-              arAssetDrawable=R.raw.selfkant;
+              arAsset="selfkant";
               break;
           case 7:
               target.setLatitude(51.06025);
               target.setLongitude(6.093267);
-              arAssetDrawable=R.raw.heinsberg;
+              arAsset="heinsberg";
               break;
           case 8:
               target.setLatitude(51.058228);
               target.setLongitude(6.173339);
-              arAssetDrawable=R.raw.adolfosee;
+              arAsset="adolfosee";
               break;
           case 9:
               target.setLatitude(51.050628);
               target.setLongitude(6.204579);
-              arAssetDrawable=R.raw.millcoh;
+              arAsset="millcoh";
               break;
           case 10:
               target.setLatitude(51.056557);
               target.setLongitude(6.208612);
-              arAssetDrawable=R.raw.millich;
+              arAsset="millich";
               break;
           case 11:
               target.setLatitude(51.068524);
               target.setLongitude(6.277999);
-              arAssetDrawable=R.raw.hh;
+              arAsset="hh";
               break;
           case 12:
               target.setLatitude(51.068119);
               target.setLongitude(6.278686);
-              arAssetDrawable=R.raw.hh2;
+              arAsset="hh2";
               break;
           case 13:
               target.setLatitude(51.121186);
               target.setLongitude(6.264326);
-              arAssetDrawable=R.raw.tuichenundgebackenesobst;
+              arAsset="tuichenundgebackenesobst";
               break;
           case 14:
               target.setLatitude(51.104477);
               target.setLongitude(6.177899);
-              arAssetDrawable=R.raw.trauerweider;
+              arAsset="trauerweider";
               break;
           case 21:
-//              target.setLatitude(50.785559);
-//              target.setLongitude(6.053371);
               target.setLatitude(51.103102);
               target.setLongitude(6.052899);
-              arAssetDrawable=R.raw.blume;
+              arAsset="blume";
               break;
           case 22:
               target.setLatitude(51.051113);
               target.setLongitude(5.866353);
-              arAssetDrawable=R.raw.pass;
+              arAsset="pass";
               break;
           case 23:
               target.setLatitude(51.118383);
               target.setLongitude(6.192719);
-              arAssetDrawable=R.raw.insektenhotel;
+              arAsset="insektenhotel";
               break;
           case 24:
               target.setLatitude(51.106498);
               target.setLongitude(6.177899);
-              arAssetDrawable=R.raw.hase;
+              arAsset="hase";
               break;
           case 25:
               target.setLatitude(50.776399);
               target.setLongitude(6.083909);
-              arAssetDrawable=R.raw.hase;
+              arAsset="aachen";
               break;
           case 26:
               target.setLatitude(50.963899);
               target.setLongitude(6.121553);
-              arAssetDrawable=R.raw.hase;
+              arAsset="geilenkirchen";
               break;
           case 27:
-              target.setLatitude(50.919995);
-              target.setLongitude(6.120102);
-              arAssetDrawable=R.raw.hase;
+              target.setLatitude(50.785559);
+              target.setLongitude(6.053371);
+//              target.setLatitude(50.919995);
+//              target.setLongitude(6.120102);
+              arAsset="uebach";
               break;
 
       }
@@ -247,28 +253,43 @@ public class ArtWorkDisplayActivity extends AppCompatActivity implements FileUti
       WeakReference<ArtWorkDisplayActivity> weakActivity = new WeakReference<>(this);
       // When you build a Renderable, Sceneform loads its resources in the background while returning
       // a CompletableFuture. Call thenAccept(), handle(), or check isDone() before calling get().
-      ModelRenderable.builder()
-              .setSource(
-                      this,
-                      arAssetDrawable)
-              .setIsFilamentGltf(true)
-              .build()
-              .thenAccept(
-                      modelRenderable -> {
-                          ArtWorkDisplayActivity activity = weakActivity.get();
-                          if (activity != null) {
-                              activity.renderable = modelRenderable;
-                          }
-                      })
-              .exceptionally(
-                      throwable -> {
-                          Toast toast =
-                                  Toast.makeText(this, "Unable to load Artwork", Toast.LENGTH_LONG);
-                          toast.setGravity(Gravity.CENTER, 0, 0);
-                          toast.show();
-                          return null;
-                      });
-
+      String finalArAsset = arAsset;
+      try {
+          ModelRenderable.builder()
+                  .setSource(
+                          this,
+                          new Callable<InputStream>() {
+                              @Override
+                              public InputStream call(){
+                                  try {
+                                      InputStream is = getAssets().open(finalArAsset + ".glb");
+                                      Log.d(TAG, "call: "+is);
+                                      return is;
+                                  } catch (Exception e) {
+                                      throw new CompletionException(e);
+                                  }
+                              }
+                          })
+                  .setIsFilamentGltf(true)
+                  .build()
+                  .thenAccept(
+                          modelRenderable -> {
+                              ArtWorkDisplayActivity activity = weakActivity.get();
+                              if (activity != null) {
+                                  activity.renderable = modelRenderable;
+                              }
+                          })
+                  .exceptionally(
+                          throwable -> {
+                              Toast toast =
+                                      Toast.makeText(this, "Unable to load Artwork", Toast.LENGTH_LONG);
+                              toast.setGravity(Gravity.CENTER, 0, 0);
+                              toast.show();
+                              return null;
+                          });
+      }catch (Exception e){
+          Log.d(TAG, "onCreate: "+e);
+      }
       isRenderablePlaced=false;
       isPhotoVdoMode=false;
       snap.setOnClickListener(new View.OnClickListener() {
@@ -395,8 +416,11 @@ public class ArtWorkDisplayActivity extends AppCompatActivity implements FileUti
     protected void onResume()
     {
         super.onResume();
-        if(!PermissionHelper.hasLocationPermission(this)){
-            PermissionHelper.requestLocationPermission(this);
+        if(!PermissionHelper.hasPermission(this)){
+            PermissionHelper.requestPermissions(this);
+        }
+        if (!PermissionHelper.hasStoragePermission(this)){
+            PermissionHelper.requestStoragePermission(this);
         }
         arFragment.onResume();
         try {
@@ -483,6 +507,24 @@ public class ArtWorkDisplayActivity extends AppCompatActivity implements FileUti
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        if (!PermissionHelper.hasCameraPermission(this)) {
+            Toast.makeText(this, getText(R.string.permission_camera), Toast.LENGTH_LONG)
+                    .show();
+            if (!PermissionHelper.shouldShowRequestPermissionRationale(this)) {
+                // Permission denied with checking "Do not ask again".
+                PermissionHelper.launchPermissionSettings(this);
+            }
+            finish();
+        }
+        if (!PermissionHelper.hasStoragePermission(this)) {
+            Toast.makeText(this, getText(R.string.permission_storage), Toast.LENGTH_LONG)
+                    .show();
+            if (!PermissionHelper.shouldShowRequestPermissionRationaleStorage(this)) {
+                // Permission denied with checking "Do not ask again".
+                PermissionHelper.launchPermissionSettings(this);
+            }
+            finish();
+        }
     }
 
     @Override

@@ -1,4 +1,5 @@
 include ':app'
+include ':asset_pack'
 include ':sceneform'
 project(':sceneform').projectDir=new File('sceneformsrc/sceneform')
 
