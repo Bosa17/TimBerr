@@ -15,13 +15,13 @@
 apply plugin: 'com.android.application'
 
 android {
-    compileSdkVersion 30
+    compileSdkVersion 34
     defaultConfig {
         applicationId "com.timberr.ar.TBDemo"
 
         // Sceneform requires minSdkVersion >= 24.
         minSdkVersion 24
-        targetSdkVersion 30
+        targetSdkVersion 34
         versionCode 1
         versionName "1.0"
     }

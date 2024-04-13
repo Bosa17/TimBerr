@@ -16,7 +16,7 @@
 // all sub-projects/modules.
 
 buildscript {
-    ext.kotlin_version = '1.5.0-M1'
+    ext.kotlin_version = '1.6.21'
     repositories {
         google()
         jcenter()
@@ -25,7 +25,7 @@ buildscript {
         maven { url 'https://dl.bintray.com/kotlin/kotlin-eap' }
     }
     dependencies {
-        classpath 'com.android.tools.build:gradle:4.0.2'
+        classpath 'com.android.tools.build:gradle:7.4.2'
         classpath 'com.google.ar.sceneform:plugin:1.15.0'
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
         // NOTE: Do not place your application dependencies here; they belong

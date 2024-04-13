@@ -72,7 +72,7 @@ public class LandingActivity extends AppCompatActivity {
         rotate.setDuration(17000);
         rotate.setRepeatCount(Animation.INFINITE);
         rotate_bg.startAnimation(rotate);
-        audio.playMusic();
+        //audio.playMusic();
         if (!PermissionHelper.hasPermission(this)) {
             PermissionHelper.requestPermissions(this);
         }

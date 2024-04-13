@@ -1,6 +1,7 @@
 package com.timberr.ar.TBDemo.Utils;
 
 import android.content.Context;
+import android.media.AudioAttributes;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
 import android.net.Uri;
@@ -38,7 +39,11 @@ public class AudioHelper {
             Log.d("AudioFocus", "Audio focus NOT received");
         }
         mPlayer = new MediaPlayer();
-        mPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
+        mPlayer.setAudioAttributes(
+                new AudioAttributes
+                        .Builder()
+                        .setContentType(AudioAttributes.CONTENT_TYPE_MUSIC)
+                        .build());
         try {
             mPlayer.setDataSource(mContext,
                     Uri.parse("android.resource://" + mContext.getPackageName() + "/" + R.raw.start_music));

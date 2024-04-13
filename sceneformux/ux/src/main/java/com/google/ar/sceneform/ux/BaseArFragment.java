@@ -169,11 +169,6 @@ public abstract class BaseArFragment extends Fragment
     }
     planeDiscoveryController = new PlaneDiscoveryController(instructionsView);
 
-    if (Build.VERSION.SDK_INT < VERSION_CODES.N) {
-      // Enforce API level 24
-      return frameLayout;
-    }
-
     transformationSystem = makeTransformationSystem();
 
     gestureDetector =

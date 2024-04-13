@@ -41,14 +41,6 @@ public class AugmentedImageFragment extends ArFragment {
     public void onAttach(Context context) {
         super.onAttach(context);
 
-        // Check for Sceneform being supported on this device.  This check will be integrated into
-        // Sceneform eventually.
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.N) {
-            Log.e(TAG, "Sceneform requires Android N or later");
-            SnackbarHelper.getInstance()
-                    .showError(getActivity(), "Sceneform requires Android N or later");
-        }
-
         String openGlVersionString =
                 ((ActivityManager) context.getSystemService(Context.ACTIVITY_SERVICE))
                         .getDeviceConfigurationInfo()
@@ -102,7 +94,7 @@ public class AugmentedImageFragment extends ArFragment {
 
         augmentedImageDatabase = new AugmentedImageDatabase(session);
         augmentedImageDatabase.addImage(IMAGE_1, Objects.requireNonNull(loadAugmentedImageBitmap(assetManager, IMAGE_1)),0.07f);
-        augmentedImageDatabase.addImage(IMAGE_2, Objects.requireNonNull(loadAugmentedImageBitmap(assetManager, IMAGE_2)),0.07f);
+        //augmentedImageDatabase.addImage(IMAGE_2, Objects.requireNonNull(loadAugmentedImageBitmap(assetManager, IMAGE_2)),0.07f);
         config.setAugmentedImageDatabase(augmentedImageDatabase);
         return true;
     }

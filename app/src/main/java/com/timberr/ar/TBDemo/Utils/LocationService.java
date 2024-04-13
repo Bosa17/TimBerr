@@ -270,11 +270,11 @@ public class LocationService extends Service  {
 
         // The PendingIntent that leads to a call to onStartCommand() in this service.
         PendingIntent servicePendingIntent = PendingIntent.getService(this, 0, intent,
-                PendingIntent.FLAG_UPDATE_CURRENT);
+                PendingIntent.FLAG_IMMUTABLE);
 
         // The PendingIntent to launch activity.
         PendingIntent activityPendingIntent = PendingIntent.getActivity(this, 0,
-                new Intent(this, NavigationActivity.class), 0);
+                new Intent(this, NavigationActivity.class), PendingIntent.FLAG_IMMUTABLE);
 
         NotificationCompat.Builder builder = new NotificationCompat.Builder(this)
                 .addAction(R.drawable.ic_launcher, "Navigate",
@@ -307,7 +307,7 @@ public class LocationService extends Service  {
         CharSequence title = "Artwork Nearby!";
         // The PendingIntent to launch activity.
         PendingIntent activityPendingIntent = PendingIntent.getActivity(this, 0,
-                new Intent(this, ArtWorkDisplayActivity.class), 0);
+                new Intent(this, ArtWorkDisplayActivity.class), PendingIntent.FLAG_IMMUTABLE);
 
         NotificationCompat.Builder builder = new NotificationCompat.Builder(this)
                 .setContentIntent(activityPendingIntent)
