@@ -5,7 +5,7 @@ project(':sceneform').projectDir=new File('sceneformsrc/sceneform')
 include ':sceneformux'
 project(':sceneformux').projectDir=new File('sceneformux/ux')
 
-
+include ':ar_asset_pack'
 
 
 

@@ -17,7 +17,7 @@ apply plugin: 'com.android.application'
 android {
     compileSdkVersion 34
     defaultConfig {
-        applicationId "com.timberr.ar.TBDemo"
+        applicationId "com.timberr.ar.Bilderreise"
 
         // Sceneform requires minSdkVersion >= 24.
         minSdkVersion 24
@@ -37,6 +37,8 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
     }
+
+    assetPacks = [":ar_asset_pack"]
 }
 
 dependencies {

@@ -1,16 +1,20 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
-    package="com.timberr.ar.TBDemo">
+    package="com.timberr.ar.Bilderreise">
     <!--
          "AR Required" apps must declare minSdkVersion ≥ 24.
          "AR Optional" apps must declare minSdkVersion ≥ 14
     -->
     <!-- Always needed for AR. -->
-    <uses-permission android:name="android.permission.CAMERA" /> <!-- Internet required for navigation to destination -->
-    <uses-permission android:name="android.permission.INTERNET" /> <!-- Access location details for navigation -->
+    <uses-permission android:name="android.permission.CAMERA" />
+    <!-- Internet required for navigation to destination -->
+    <uses-permission android:name="android.permission.INTERNET" />
+    <!-- Access location details for navigation -->
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
-    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" /> <!-- Read and write permissions for storing and sharing images -->
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_LOCATION" />
+    <!-- Read and write permissions for storing and sharing images -->
     <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" />
     <uses-permission android:name="android.permission.READ_MEDIA_VIDEO" />
     <uses-permission
@@ -60,7 +64,7 @@
 
         <provider
             android:name="androidx.core.content.FileProvider"
-            android:authorities="${applicationId}.com.timberr.ar.TBDemo.provider"
+            android:authorities="${applicationId}.com.timberr.ar.Bilderreise.provider"
             android:exported="false"
             android:grantUriPermissions="true">
             <meta-data

@@ -7,7 +7,7 @@
     tools:context=".GuideCameraActivity">
 
 
-    <fragment android:name="com.timberr.ar.TBDemo.Utils.AugmentedImageFragment"
+    <fragment android:name="com.timberr.ar.Bilderreise.Utils.AugmentedImageFragment"
         android:id="@+id/augmented_image_fragment"
         android:layout_width="match_parent"
         android:layout_height="match_parent" />

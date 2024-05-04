@@ -24,7 +24,7 @@
 
   <fragment
       android:id="@+id/artwork_fragment"
-      android:name="com.timberr.ar.TBDemo.Utils.ArtworkDisplayARFragment"
+      android:name="com.timberr.ar.Bilderreise.Utils.ArtworkDisplayARFragment"
       android:keepScreenOn="true"
       android:layout_width="match_parent"
       android:layout_height="match_parent"
